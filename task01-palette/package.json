@@ -1,0 +1,21 @@
+{
+  "name": "palette-forge",
+  "version": "1.0.0",
+  "description": "输入任意主色，生成 10 阶品牌色阶与 14 阶中性色阶，支持深色模式与色觉障碍模拟",
+  "scripts": {
+    "build": "esbuild src/app.ts --bundle --format=iife --target=es2019 --outfile=dist/app.js && node build/inline.mjs",
+    "dev": "esbuild src/app.ts --bundle --format=iife --target=es2019 --outfile=dist/app.js --watch --servedir=.",
+    "typecheck": "tsc",
+    "test": "node test/run.mjs && npm run build --silent && node test/ui.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.0.1",
+    "typescript": "^5.9.3"
+  },
+  "type": "module",
+  "directories": {
+    "test": "test"
+  },
+  "private": true
+}
