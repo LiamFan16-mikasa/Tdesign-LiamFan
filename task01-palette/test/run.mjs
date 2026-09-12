@@ -17,7 +17,7 @@ execSync('npx esbuild src/index.ts --bundle --format=esm --platform=node --outfi
   cwd: root, stdio: 'pipe',
 });
 const lib = await import(path.join(root, 'dist/lib.mjs'));
-const { generatePalette, parseColor, toHex, rgbToHct, hctToRgb, simulate } = lib;
+const { generatePalette, parseColor, toHex, rgbToHct, hctToRgb, simulate, toCssVariables, toTokenJson } = lib;
 
 let pass = 0, fail = 0;
 const ok = (name, cond, detail = '') => {
@@ -129,6 +129,77 @@ for (const type of ['protanopia', 'deuteranopia', 'tritanopia', 'achromatopsia']
   ok(`${type} 十阶仍可分`, new Set(sim.map(toHex)).size === 10, String(new Set(sim.map(toHex)).size));
 }
 ok('全色盲结果为灰', simulate(parseColor('#0052D9'), 'achromatopsia').r === simulate(parseColor('#0052D9'), 'achromatopsia').b);
+
+/* ── 5. Design Token 导出 ────────────────────────────────────────── */
+console.log('Design Token 导出');
+{
+  const L = generatePalette('#0052D9', 'light');
+  const D = generatePalette('#0052D9', 'dark');
+  const j = toTokenJson(L);
+  const keys = Object.keys(j);
+
+  ok('token 数量 24', keys.length === 24, String(keys.length));
+  ok('品牌 10 个', keys.filter((k) => k.includes('brand-color')).length === 10);
+  ok('中性 14 个', keys.filter((k) => k.includes('gray-color')).length === 14);
+  ok('命名对齐 TDesign', ['--td-brand-color-1', '--td-brand-color-10', '--td-gray-color-1', '--td-gray-color-14']
+    .every((k) => k in j));
+  ok('无 0 号或 11 号品牌阶', !('--td-brand-color-0' in j) && !('--td-brand-color-11' in j));
+  ok('值全是六位十六进制', Object.values(j).every((v) => /^#[0-9A-F]{6}$/.test(v)));
+  ok('第 7 阶等于输入主色', j['--td-brand-color-7'] === '#0052D9', j['--td-brand-color-7']);
+
+  const css = toCssVariables(L);
+  ok('浅色用 :root', css.startsWith(':root {'), css.slice(0, 24));
+  ok('CSS 行数正确', css.split('\n').filter((l) => l.trim().startsWith('--td-')).length === 24);
+  ok('CSS 声明格式', /^ {2}--td-brand-color-1: #[0-9A-F]{6};$/m.test(css));
+
+  const cssDark = toCssVariables(D);
+  ok('深色用 theme-mode 选择器', cssDark.includes("[theme-mode='dark']"), cssDark.slice(0, 40));
+
+  const pre = toTokenJson(L, { prefix: 'my' });
+  ok('前缀可改', '--my-brand-color-7' in pre);
+
+  const sel = toCssVariables(L, { selector: '.theme-a' });
+  ok('选择器可改', sel.startsWith('.theme-a {'));
+
+  // 深色阶方向：序号越大越浅
+  const dTones = D.brand.map((s) => s.tone);
+  ok('深色阶 1 号最深', dTones[0] < dTones[9], `${dTones[0].toFixed(1)} vs ${dTones[9].toFixed(1)}`);
+}
+
+/* ── 6. 对照 TDesign 官方色阶 ─────────────────────────────────────── */
+console.log('对照 TDesign 官方色阶');
+{
+  // 取自 tdesign-common/style/web/theme/_light.less
+  const OFFICIAL = {
+    brand:   { anchor: 7, hex: ['#f2f3ff','#d9e1ff','#b5c7ff','#8eabff','#618dff','#366ef4','#0052d9','#003cab','#002a7c','#001a57'] },
+    warning: { anchor: 5, hex: ['#fff1e9','#ffd9c2','#ffb98c','#fa9550','#e37318','#be5a00','#954500','#713300','#532300','#3b1700'] },
+    error:   { anchor: 6, hex: ['#fff0ed','#ffd8d2','#ffb9b0','#ff9285','#f6685d','#d54941','#ad352f','#881f1c','#68070a','#490002'] },
+    success: { anchor: 5, hex: ['#e3f9e9','#c6f3d7','#92dab2','#56c08d','#2ba471','#008858','#006c45','#005334','#003b23','#002515'] },
+  };
+  const labOf = (hex) => {
+    const c = parseColor(hex);
+    const lin = (v) => { const x = v / 255; return x <= 0.040449936 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+    const [r, g, b] = [lin(c.r), lin(c.g), lin(c.b)];
+    const X = (0.41233895 * r + 0.35762064 * g + 0.18051042 * b) * 100;
+    const Y = (0.2126 * r + 0.7152 * g + 0.0722 * b) * 100;
+    const Z = (0.01932141 * r + 0.11916382 * g + 0.95034478 * b) * 100;
+    const f = (t) => (t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116);
+    const [fx, fy, fz] = [f(X / 95.047), f(Y / 100), f(Z / 108.883)];
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  };
+  const dE = (a, b) => { const [p, q] = [labOf(a), labOf(b)]; return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]); };
+
+  for (const [name, { anchor, hex }] of Object.entries(OFFICIAL)) {
+    const ours = generatePalette(hex[anchor - 1], 'light').brand.map((s) => s.hex);
+    const es = ours.map((h, i) => dE(hex[i].toUpperCase(), h));
+    const avg = es.reduce((a, b) => a + b, 0) / es.length;
+    // 生成结果与官方手工调校的色阶应当足够接近；放宽到 3 留出余量
+    ok(`${name} 平均 ΔEab < 3`, avg < 3, avg.toFixed(2));
+    ok(`${name} 主色位精确命中`, ours[anchor - 1] === hex[anchor - 1].toUpperCase(),
+       `${ours[anchor - 1]} vs ${hex[anchor - 1].toUpperCase()}`);
+    console.log(`  ${name.padEnd(8)} 平均 ΔEab ${avg.toFixed(2)}  最大 ${Math.max(...es).toFixed(1)}`);
+  }
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

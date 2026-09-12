@@ -1,3 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#E9ECEE" />
+<title>色阶发生器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Azeret+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ────────────────────────────────────────────────────────────────
+   页面自身的配色是固定的，只有底色跟着明暗开关走。
+   页面上唯一的彩色来自生成的色阶——任何额外的品牌色都会和色票抢戏。
+   ──────────────────────────────────────────────────────────────── */
+:root {
+  --paper: #E9ECEE;
+  --panel: #F4F6F7;
+  --ink: #15181C;
+  --muted: #6B7378;
+  --rule: #D2D7DB;
+  --warn: #B4453C;
+
+  --latin: "Archivo", system-ui, sans-serif;
+  --cjk: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC";
+  --sans: var(--latin), var(--cjk), sans-serif;
+  --mono: "Azeret Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --pad: clamp(20px, 5vw, 56px);
+  --strip-h: clamp(190px, 36vh, 340px);
+}
+
+html[data-mode="dark"] {
+  --paper: #111417;
+  --panel: #171B1F;
+  --ink: #E8ECEF;
+  --muted: #7C858B;
+  --rule: #262B30;
+  --warn: #E0796E;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  transition: background-color .3s ease, color .3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.hold { padding-inline: var(--pad); max-width: 1180px; width: 100%; margin-inline: auto; }
+
+/* ─────────────────────────── 顶栏 ─────────────────────────── */
+
+.top {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap;
+  padding-block: 26px 22px;
+}
+
+h1 {
+  font-family: var(--latin), var(--cjk), sans-serif;
+  font-size: 17px; font-weight: 600; letter-spacing: -.005em;
+  margin: 0;
+}
+.sub { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+
+/* ─────────────────────────── 控件 ─────────────────────────── */
+
+.controls {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding-bottom: 26px;
+}
+
+.entry { display: flex; align-items: stretch; border: 1px solid var(--rule); border-radius: 2px; background: var(--panel); }
+.entry.bad { border-color: var(--warn); }
+
+#hex {
+  font-family: var(--mono); font-size: 14px; font-weight: 400;
+  letter-spacing: .01em;
+  width: 22ch; max-width: 46vw;
+  padding: 9px 12px;
+  border: 0; background: transparent; color: var(--ink);
+}
+#hex::placeholder { color: var(--muted); opacity: .75; }
+#hex:focus { outline: 0; }
+.entry:focus-within { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+#pick {
+  width: 40px; border: 0; border-left: 1px solid var(--rule);
+  background: var(--sw, #0052D9); cursor: pointer; padding: 0;
+  transition: background-color .3s ease;
+}
+#pick:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+.presets { display: flex; gap: 5px; }
+.presets button {
+  width: 20px; height: 20px; padding: 0; border-radius: 50%;
+  border: 1px solid rgba(128,128,128,.35); cursor: pointer;
+}
+.presets button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.spacer { flex: 1 1 24px; }
+
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
+.seg button {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .02em;
+  padding: 7px 13px; border: 0; border-left: 1px solid var(--rule);
+  background: transparent; color: var(--muted); cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.seg button:first-child { border-left: 0; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+
+.hint { font-size: 12.5px; color: var(--warn); min-height: 1.2em; margin: -14px 0 20px; }
+.hint:empty { display: none; }
+
+/* ────────────────── 打样条：这一页唯一的主角 ────────────────── */
+
+.strip {
+  display: flex; width: 100%;
+  height: var(--strip-h);
+}
+.strip .seg-cell {
+  flex: 1 1 0; position: relative;
+  border: 0; padding: 0; margin: 0;
+  cursor: pointer;
+  background: var(--c);
+  transition: background-color .28s ease;
+}
+.strip .seg-cell .val {
+  position: absolute; left: 0; right: 0; bottom: 12px;
+  text-align: center;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  color: var(--fg);
+  opacity: 0; transition: opacity .16s ease;
+  pointer-events: none;
+}
+.strip .seg-cell:hover .val,
+.strip .seg-cell:focus-visible .val { opacity: 1; }
+.strip .seg-cell:focus-visible { outline: 2px solid var(--fg); outline-offset: -4px; }
+
+.caption {
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em;
+  color: var(--muted);
+  padding-block: 14px 30px;
+  display: flex; gap: 6px 18px; flex-wrap: wrap;
+}
+.caption b { color: var(--ink); font-weight: 500; }
+
+/* ─────────────────────────── 中性色阶 ─────────────────────────── */
+
+.minor-label {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 8px;
+}
+.strip.minor { height: 40px; border-radius: 2px; overflow: hidden; }
+
+/* ─────────────────────────── 底部 ─────────────────────────── */
+
+.foot {
+  margin-top: auto;
+  border-top: 1px solid var(--rule);
+  padding-block: 20px 30px;
+  display: flex; align-items: center; gap: 14px 20px; flex-wrap: wrap;
+}
+.foot .note { color: var(--muted); font-size: 12.5px; max-width: 46ch; }
+
+#toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px);
+  background: var(--ink); color: var(--paper);
+  font-family: var(--mono); font-size: 12px; letter-spacing: .03em;
+  padding: 8px 15px; border-radius: 2px;
+  opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s;
+}
+#toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 640px) {
+  #hex { width: 16ch; }
+  .caption { font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="hold">
+  <div class="top">
+    <div>
+      <h1>色阶发生器</h1>
+      <p class="sub">给一个主色，长出十阶。</p>
+    </div>
+    <div class="seg" role="group" aria-label="明暗模式">
+      <button data-mode="light" aria-pressed="true">浅色</button>
+      <button data-mode="dark" aria-pressed="false">深色</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="entry" id="entry">
+      <input id="hex" spellcheck="false" autocomplete="off"
+             placeholder="#0052D9 或 rgb(0,82,217)" aria-label="主色" />
+      <button id="pick" aria-label="打开取色器"></button>
+    </div>
+    <div class="presets" id="presets"></div>
+  </div>
+  <p class="hint" id="hint"></p>
+</div>
+
+<div class="strip" id="brand" role="list" aria-label="品牌色阶 10 阶"></div>
+
+<div class="hold">
+  <div class="caption" id="caption"></div>
+
+  <div class="minor-label">中性色阶 · 14 阶</div>
+  <div class="strip minor" id="neutral" role="list" aria-label="中性色阶 14 阶"></div>
+</div>
+
+<div class="hold">
+  <div class="foot">
+    <div class="seg" role="group" aria-label="色觉模拟" id="cvd"></div>
+    <p class="note" id="cvdNote">色觉模拟只改变屏幕上看到的颜色，复制出来的始终是真实色值。</p>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
 "use strict";
 (() => {
   // src/color.ts
@@ -519,3 +758,7 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
+
+</script>
+</body>
+</html>
