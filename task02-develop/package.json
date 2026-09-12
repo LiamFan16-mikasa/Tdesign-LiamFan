@@ -1,0 +1,35 @@
+{
+  "name": "xianyingtai",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "显影台 —— 用色阶当滤镜的风光摄影调色台",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "esbuild test/presets.ts --bundle --platform=node --format=esm --outfile=node_modules/.tmp-test.mjs --tsconfig=tsconfig.json && node node_modules/.tmp-test.mjs",
+    "e2e": "node e2e/run.cjs",
+    "e2e:preview": "node e2e/prodcheck.cjs http://localhost:4173/Tdesign-LiamFan/task02-develop/dist/ && node e2e/run.cjs http://localhost:4173/Tdesign-LiamFan/task02-develop/dist/",
+    "e2e:live": "node e2e/prodcheck.cjs https://liamfan16-mikasa.github.io/Tdesign-LiamFan/task02-develop/dist/ && node e2e/run.cjs https://liamfan16-mikasa.github.io/Tdesign-LiamFan/task02-develop/dist/"
+  },
+  "dependencies": {
+    "tdesign-vue-next": "^1.9.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "esbuild": "^0.28.2",
+    "fake-indexeddb": "^6.2.5",
+    "playwright-core": "^1.63.0",
+    "typescript": "^5.4.0",
+    "unplugin-vue-components": "^32.1.0",
+    "vite": "^5.2.0",
+    "vue-tsc": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,115 @@
+/* ────────────────────────────────────────────────────────────────
+   显影台 · 光学台 / Lightbox
+
+   页面配色由色阶驱动(TDesign token),只有「暗房台面」这一层是产品自己的外壳,
+   不随色阶变——它是照片的背景,像灯箱边框,给主角一个稳定的舞台。
+
+   下面这套尺度 token 是全站的唯一来源。规矩只有四条:
+
+   1. 圆角编码物体的性质,不是随手取的数:
+      刻度(1px) < 控件(3px) < 面板(6px)。仪器是机加工的直角,没有胶囊。
+   2. 只有照片投影。照片是灯箱上的一张相纸,投影是它的物理属性;
+      其余一切只用发丝描边分层,不堆阴影。
+   3. 所有数字走等宽:色值、尺寸、毫秒、百分比、区间。仪器的读数是等宽的。
+   4. 悬停只改描边,不改位置。这个产品真正的动效是照片重新渲染那一下。
+   ──────────────────────────────────────────────────────────────── */
+
+:root {
+  /* 站点只有浅色一套。不声明的话,深色系统的浏览器会自动反色原生滚动条
+     和表单控件,压在我们的浅色界面上。 */
+  color-scheme: light;
+
+  /* ── 外壳:不进色阶的中性骨架 ── */
+  --stage: #16181c;          /* 照片台面 */
+  --stage-line: #22252b;     /* 台面网格纹理 */
+  --stage-edge: #2a2e35;     /* 台面内缘 */
+  --stage-ink: #cdd4dd;      /* 台面上的主文字 */
+  --stage-ink-dim: #8a929c;  /* 台面上的次要文字 */
+
+  /* ── 字体:两个家族,两个真实的角色 ──
+     Sans 管所有文字;Mono 只管数字与读数,不当正文用。
+     IBM Plex 本来就是为工程与技术语境定制的,不是通用无衬线。 */
+  --font-sans: "IBM Plex Sans", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── 字阶:六档,各有职责,没有半像素 ── */
+  --t-micro: 11px;   /* 刻度数字、元信息 */
+  --t-small: 12px;   /* 次要说明、提示 */
+  --t-base: 13px;    /* 密集界面文字 */
+  --t-body: 14px;    /* 正文、控件 */
+  --t-title: 16px;   /* 卡片与分区标题 */
+  --t-h1: 20px;      /* 站名 */
+
+  /* ── 间距:4 的倍数 ── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-12: 48px;
+
+  /* ── 圆角:三档 ── */
+  --r-tick: 1px;     /* 色阶刻度、发丝级元素 */
+  --r-ctl: 3px;      /* 按钮、输入框、色块、标签 */
+  --r-panel: 6px;    /* 面板、卡片、台面、封面 */
+
+  /* ── 唯一的投影:灯箱上那张相纸 ── */
+  --lift-print: 0 6px 24px rgba(0, 0, 0, .4), 0 0 0 1px rgba(0, 0, 0, .3);
+  --lift-thumb: 0 1px 3px rgba(0, 0, 0, .14);
+
+  --ease: .15s ease;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--td-bg-color-page);
+  color: var(--td-text-color-primary);
+  font-family: var(--font-sans);
+  font-size: var(--t-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .3s ease, color .3s ease;
+}
+
+/* 数字和刻度一律走等宽,像仪器读数 */
+.mono, .tnum {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
+}
+
+/* 只给读屏用的文字:不占位,但在无障碍树里。
+   用于给每个面板补标题层级——视觉上靠 tab 已经说清楚了,读屏需要显式的 h2。 */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* 视觉隐藏但仍可聚焦的表单控件。
+   注意不能用 hidden / display:none —— 那会把元素移出 tab 序列,
+   键盘用户就再也点不到外层 label(上传照片正是这么丢掉键盘通路的)。 */
+.file-input {
+  position: absolute; width: 1px; height: 1px;
+  opacity: 0; pointer-events: none;
+}
+
+/* 键盘焦点在任何地方都要看得见 */
+:focus-visible {
+  outline: 2px solid var(--td-brand-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
