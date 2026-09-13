@@ -30,7 +30,10 @@ function rampOf(hex: string) {
     <div class="grid">
       <article v-for="i in INSPIRATIONS" :key="i.id" class="card">
         <div class="cover">
-          <img :src="i.cover" :alt="i.title" loading="lazy" decoding="async" />
+          <img
+            :src="i.cover" :alt="`${i.title}：${i.scene}`" loading="lazy" decoding="async"
+            :style="i.coverPosition ? { objectPosition: i.coverPosition } : undefined"
+          />
           <span class="scene">{{ i.scene }}</span>
         </div>
 
@@ -73,11 +76,15 @@ function rampOf(hex: string) {
 .card {
   border: 1px solid var(--td-component-stroke); border-radius: var(--r-panel); overflow: hidden;
   background: var(--td-bg-color-container); transition: border-color var(--ease);
+  /* 同一排卡片等高,说明文字长短不一时按钮仍对齐在卡片底部 */
+  display: flex; flex-direction: column;
 }
 .card:hover { border-color: var(--td-brand-color); }
 
-.cover { position: relative; aspect-ratio: 4 / 3; background: var(--stage); }
-.cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 卡片是纵向 flex:封面若由图片撑高,竖拍照片会把框撑成原图比例。
+   图片绝对定位后不参与高度计算,框的高度只由 4:3 决定 */
+.cover { position: relative; aspect-ratio: 4 / 3; background: var(--stage); flex: none; }
+.cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .scene {
   position: absolute; left: var(--s-2); bottom: var(--s-2);
   font-size: var(--t-micro); color: #fff; padding: 2px 6px; border-radius: var(--r-ctl);
@@ -88,13 +95,13 @@ function rampOf(hex: string) {
 .ramp i { flex: 1; height: 5px; transition: opacity var(--ease); }
 .ramp i.off { opacity: .2; }
 
-.body { padding: var(--s-3) var(--s-3) var(--s-4); }
+.body { padding: var(--s-3) var(--s-3) var(--s-4); flex: 1; display: flex; flex-direction: column; }
 .h { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); flex-wrap: wrap; }
 .h h3 { font-size: var(--t-title); font-weight: 600; letter-spacing: -.01em; margin: 0; }
 
 /* 读数条:不用中点串接,靠间距和等宽数字分开 */
 .meta { display: flex; align-items: baseline; gap: var(--s-2); font-size: var(--t-micro); color: var(--td-text-color-secondary); }
 
-.note { font-size: var(--t-small); line-height: 1.6; margin: var(--s-1) 0 var(--s-3); }
+.note { font-size: var(--t-small); line-height: 1.6; margin: var(--s-1) 0 var(--s-3); flex: 1; }
 .dim { color: var(--td-text-color-secondary); }
 </style>
