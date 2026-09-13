@@ -10,13 +10,14 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 execSync('npx esbuild src/index.ts --bundle --format=esm --platform=node --outfile=dist/lib.mjs', {
   cwd: root, stdio: 'pipe',
 });
-const lib = await import(path.join(root, 'dist/lib.mjs'));
+// Windows 上 import() 不接受 D:\... 这种绝对路径(开头的 d: 会被当成协议名),先转成 file:// URL
+const lib = await import(pathToFileURL(path.join(root, 'dist/lib.mjs')).href);
 const { generatePalette, parseColor, toHex, rgbToHct, hctToRgb, simulate, toCssVariables, toTokenJson } = lib;
 
 let pass = 0, fail = 0;
