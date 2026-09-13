@@ -63,6 +63,11 @@
   --lift-print: 0 6px 24px rgba(0, 0, 0, .4), 0 0 0 1px rgba(0, 0, 0, .3);
   --lift-thumb: 0 1px 3px rgba(0, 0, 0, .14);
 
+  /* ── 磨砂玻璃:浮在流动背景上的内容面板,保证文字对比度 ── */
+  --glass: rgba(255, 255, 255, .86);
+  --glass-edge: rgba(255, 255, 255, .55);
+  --glass-filter: blur(24px) saturate(1.2);
+
   --ease: .15s ease;
 }
 
@@ -72,7 +77,8 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background: var(--td-bg-color-page);
+  /* 真正的背景由 Backdrop 组件绘制;这里的深色只是背景图就绪前的底 */
+  background: #1b1e24;
   color: var(--td-text-color-primary);
   font-family: var(--font-sans);
   font-size: var(--t-body);

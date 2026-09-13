@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Backdrop: typeof import('./components/Backdrop.vue')['default']
     CvdCheck: typeof import('./components/CvdCheck.vue')['default']
     ExportPanel: typeof import('./components/ExportPanel.vue')['default']
     Gallery: typeof import('./components/Gallery.vue')['default']

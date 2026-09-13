@@ -47,7 +47,7 @@ function rampOf(hex: string) {
     <div class="lib-bar">
       <t-input
         :value="props.keyword" clearable
-        placeholder="搜索名字或色值" style="width: 360px"
+        placeholder="搜索名字或色值" style="width: 360px; max-width: 100%"
         aria-label="在预设库里搜索" autocomplete="off"
         @change="(v: unknown) => emit('update:keyword', String(v ?? ''))"
       />
@@ -99,8 +99,16 @@ function rampOf(hex: string) {
 <style scoped>
 /* 面板至少占半屏多一点;搜索框与计数沿中轴排列,空状态放在余下区域的正中 */
 .lib { min-height: 56vh; display: flex; flex-direction: column; }
-.lib > .t-empty { margin: auto; }
-.lib-bar { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); margin-bottom: var(--s-10); }
+.lib > .t-empty { margin: auto; padding: var(--s-10) var(--s-16); }
+/* TDesign 空状态说明默认用占位色(40% 黑),在玻璃面板上对比度不到 4.5,改用次要文字色 */
+.lib > .t-empty :deep(.t-empty__description) { color: var(--td-text-color-secondary); }
+/* 搜索条和空状态浮在背景上,放进磨砂玻璃;预设卡片本身是实底白卡 */
+.lib-bar, .lib > .t-empty {
+  border-radius: var(--r-panel);
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+}
+.lib-bar { display: flex; flex-direction: column; align-items: center; align-self: center; gap: var(--s-2); margin-bottom: var(--s-10); padding: var(--s-4) var(--s-6); max-width: 100%; }
 .grow { flex: 1; }
 .muted { color: var(--td-text-color-secondary); }
 .tiny { font-size: var(--t-micro); }

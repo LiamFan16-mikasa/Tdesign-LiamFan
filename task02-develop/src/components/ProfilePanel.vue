@@ -102,7 +102,7 @@ const GLYPH_NAMES: Record<string, string> = {
 <style scoped>
 /* 个人卡片落在中轴上 */
 .profile { max-width: 560px; margin: 0 auto; }
-.card { border: 1px solid var(--td-component-stroke); border-radius: var(--r-panel); overflow: hidden; }
+.card { border: 1px solid var(--td-component-stroke); border-radius: var(--r-panel); overflow: hidden; background: var(--td-bg-color-container); }
 
 /* 头图:暗房台面当底,底边贴一条真实色带 */
 .hero {
@@ -142,7 +142,13 @@ const GLYPH_NAMES: Record<string, string> = {
 .glyph:hover { color: var(--td-brand-color); border-color: var(--td-brand-color); }
 .glyph.on { color: #fff; background: var(--td-brand-color); border-color: var(--td-brand-color); }
 
-.note { margin: var(--s-4) 0 0; text-align: center; }
+/* 说明文字浮在背景上,放进一块宽度随内容的磨砂玻璃 */
+.note {
+  margin: var(--s-4) auto 0; width: fit-content; text-align: center;
+  padding: var(--s-2) var(--s-4); border-radius: var(--r-panel);
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+}
 .dim { color: var(--td-text-color-secondary); }
 .tiny { font-size: var(--t-micro); }
 </style>

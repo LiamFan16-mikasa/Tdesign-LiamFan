@@ -58,9 +58,17 @@ const emit = defineEmits<{
 <style scoped>
 /* 面板至少占半屏多一点:读库中与空状态放在这块区域的正中,不贴着导航 */
 .gallery { min-height: 56vh; display: flex; flex-direction: column; }
-.loading, .gallery > .t-empty { margin: auto; }
+.loading, .gallery > .t-empty { margin: auto; padding: var(--s-10) var(--s-16); }
+/* TDesign 空状态说明默认用占位色(40% 黑),在玻璃面板上对比度不到 4.5,改用次要文字色 */
+.gallery > .t-empty :deep(.t-empty__description) { color: var(--td-text-color-secondary); }
+/* 读库提示、空状态和作品网格都浮在背景上,放进磨砂玻璃 */
+.loading, .gallery > .t-empty, .grid {
+  border-radius: var(--r-panel);
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+}
 .loading { display: flex; justify-content: center; }
-.grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); padding: var(--s-6); }
 .work { margin: 0; }
 
 /* 缩略图是相纸,允许投影(全站只有照片投影);悬停不位移,只亮描边 */

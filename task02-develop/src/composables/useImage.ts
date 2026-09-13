@@ -43,6 +43,8 @@ export function useImage(opts: UseImageOptions) {
   const naturalSize = ref<{ w: number; h: number } | null>(null);
   /** 上一次渲染耗时，毫秒。用来验证性能，不是装饰 */
   const lastRenderMs = ref(0);
+  /** 画布每渲染一次加一;整页背景据此同步调色结果 */
+  const renderCount = ref(0);
 
   // 原图留着供导出用；预览用的是缩放后的副本
   let sourceBitmap: ImageBitmap | HTMLImageElement | null = null;
@@ -103,6 +105,7 @@ export function useImage(opts: UseImageOptions) {
     render(previewSrc, previewDst, { lut, blend: opts.blend.value, strength: opts.strength.value / 100 });
     canvas.value.getContext('2d')!.putImageData(previewDst, 0, 0);
     lastRenderMs.value = performance.now() - t0;
+    renderCount.value++;
   }
 
   /** 合并到下一帧，拖滑块时不会积压 */
@@ -187,5 +190,5 @@ export function useImage(opts: UseImageOptions) {
     return ctx.getImageData(0, 0, canvas.value.width, canvas.value.height);
   }
 
-  return { canvas, hasImage, loading, error, naturalSize, lastRenderMs, load, exportBlob, thumbnail, snapshot, redraw: schedule };
+  return { canvas, hasImage, loading, error, naturalSize, lastRenderMs, renderCount, load, exportBlob, thumbnail, snapshot, redraw: schedule };
 }

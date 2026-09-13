@@ -23,6 +23,7 @@ import { generatePalette } from '@palette/palette';
 import ProfilePanel from './components/ProfilePanel.vue';
 import CvdCheck from './components/CvdCheck.vue';
 import ExportPanel from './components/ExportPanel.vue';
+import Backdrop from './components/Backdrop.vue';
 import { MessagePlugin } from 'tdesign-vue-next';
 
 const { raw, palette, valid } = useTheme();
@@ -58,6 +59,9 @@ const analyzing = ref(false);
 
 /** 空台面上每张示例小样底边的色阶,按示例主色生成一次 */
 const SAMPLE_RAMPS = INSPIRATIONS.map((i) => generatePalette(i.hex, 'light')?.brand ?? []);
+
+/** 没放照片时整页背景轮播用的示例图 */
+const SAMPLE_COVERS = INSPIRATIONS.map((i) => i.cover);
 
 /**
  * 从示例小样放上台面时记下是哪一张。
@@ -286,6 +290,9 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
 <template>
   <div class="app">
     <a class="skip" href="#main" @click.prevent="focusMain">跳到主要内容</a>
+
+    <!-- 整页流动的色彩背景:没放照片时轮播示例,放上后跟随调色结果 -->
+    <Backdrop :source="img.canvas.value" :version="img.renderCount.value" :photo="img.hasImage.value" :samples="SAMPLE_COVERS" />
 
     <header class="head">
       <div class="brand">
@@ -539,21 +546,22 @@ main:focus { outline: none; }
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
 }
 /* 站名略微拉开字距;左侧补同样的量,抵消最后一个字后面的字距,保证视觉上仍在中轴 */
-h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; padding-left: .06em; margin: 0; line-height: 1.15; }
-.tag { color: var(--td-text-color-secondary); font-size: var(--t-base); margin: var(--s-2) 0 0; }
+h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; padding-left: .06em; margin: 0; line-height: 1.15; color: #fff; }
+/* 页头和导航直接压在背景顶部更暗的遮罩上,文字用白色 */
+.tag { color: rgba(255, 255, 255, .9); font-size: var(--t-base); margin: var(--s-2) 0 0; }
 
 /* ── tab:沿中轴等距排开,下方分隔线通栏;用 gap 而不是每个标签的右外边距,否则整组会偏左 ── */
-.tabs { display: flex; justify-content: center; gap: var(--s-10); border-bottom: 1px solid var(--td-component-stroke); margin-bottom: var(--s-14); }
+.tabs { display: flex; justify-content: center; gap: var(--s-10); border-bottom: 1px solid rgba(255, 255, 255, .2); margin-bottom: var(--s-14); }
 .tabs a {
   display: inline-flex; align-items: center; text-decoration: none;
   font: inherit; font-size: var(--t-body); font-weight: 500;
   padding: var(--s-3) var(--s-1);
   background: none; border: 0; border-bottom: 2px solid transparent;
-  color: var(--td-text-color-secondary); cursor: pointer;
+  color: rgba(255, 255, 255, .9); cursor: pointer;
   transition: color var(--ease), border-color var(--ease); margin-bottom: -1px;
 }
-.tabs a:hover { color: var(--td-text-color-primary); }
-.tabs a.on { color: var(--td-brand-color); border-bottom-color: var(--td-brand-color); }
+.tabs a:hover { color: #fff; }
+.tabs a.on { color: #fff; border-bottom-color: #fff; }
 .count {
   display: inline-block; margin-left: var(--s-1); padding: 0 5px; font-size: var(--t-micro);
   background: var(--td-brand-color-1); color: var(--td-brand-color-7); border-radius: var(--r-ctl);
@@ -656,10 +664,13 @@ h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; paddi
 
 /* ── 工具区:分隔线是和各组并列的独立一项,space-between 把余下高度平均分到每条线的上下,线始终在两组正中;
    按钮组贴底,和台面底边对齐。屏幕太矮放不下时在栏内滚动。
-   左右各留 3px 内边距再用负外边距抵消:滚动容器会裁掉贴边控件的焦点框 ── */
+   浮在流动背景上,放进磨砂玻璃保证文字对比度;内边距也给贴边控件的焦点框留出位置 ── */
 .tools {
-  display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-3);
-  min-height: 0; overflow-y: auto; padding-inline: 3px; margin-inline: -3px;
+  display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-2);
+  min-height: 0; overflow-y: auto;
+  padding: var(--s-4) var(--s-5); border-radius: var(--r-panel);
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
 }
 .grp { display: flex; flex-direction: column; }
 .sep { flex: none; margin: 0; border: 0; border-top: 1px solid var(--td-component-stroke); }
@@ -685,7 +696,7 @@ h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; paddi
   transition: box-shadow var(--ease), border-color var(--ease);
 }
 .tone:hover .tone-chip { border-color: var(--td-text-color-primary); }
-.tone.on .tone-chip { box-shadow: 0 0 0 2px var(--td-bg-color-page), 0 0 0 3px var(--td-brand-color); }
+.tone.on .tone-chip { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--td-brand-color); }
 .tone-name { font-size: var(--t-micro); color: var(--td-text-color-secondary); text-align: center; }
 .tone.on .tone-name { color: var(--td-brand-color); }
 .tone:focus-visible { outline-offset: 2px; border-radius: var(--r-ctl); }

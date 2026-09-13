@@ -65,7 +65,13 @@ function rampOf(hex: string) {
 </template>
 
 <style scoped>
-.lead { font-size: var(--t-body); margin: 0 auto var(--s-10); max-width: 60ch; line-height: 1.7; text-align: center; }
+/* 介绍文字浮在背景上:放进一块宽度随内容的磨砂玻璃,仍在中轴上 */
+.lead {
+  font-size: var(--t-body); margin: 0 auto var(--s-10); max-width: 60ch; width: fit-content; line-height: 1.7; text-align: center;
+  padding: var(--s-3) var(--s-6); border-radius: var(--r-panel);
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+}
 .grid { display: grid; gap: var(--s-8); grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 /* 范例是 6 个:宽屏下 auto-fill 会排成 5+1,最后一张落单。够宽时固定 3 列,排成 3×2 */
 @media (min-width: 1100px) {
