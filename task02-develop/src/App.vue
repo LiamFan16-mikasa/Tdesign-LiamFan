@@ -316,10 +316,9 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
             class="stage" :class="{ dragging }" aria-label="照片台面"
             @dragover.prevent="dragging = true" @dragleave="onDragLeave" @drop.prevent="onDrop"
           >
-            <canvas
-              v-show="img.hasImage.value" :ref="(e: any) => (img.canvas.value = e)"
-              class="shot" role="img" :aria-label="shotAlt"
-            />
+            <div v-show="img.hasImage.value" class="shot-wrap">
+              <canvas :ref="(e: any) => (img.canvas.value = e)" class="shot" role="img" :aria-label="shotAlt" />
+            </div>
 
             <!-- 空台面是一张印样:上面放自己照片的入口,下面一排示例小样,点一张直接上台 -->
             <div v-if="!img.hasImage.value" class="intro">
@@ -416,6 +415,8 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
               </div>
             </div>
 
+            <hr class="sep" aria-hidden="true" />
+
             <!-- 记忆点:光学刻度尺 -->
             <div class="grp">
               <h3 class="grp-h">
@@ -446,6 +447,8 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
               <p class="dim tiny hint">暗部取右端、高光取左端。区间收窄，黑场提亮、高光压低，反差变平。</p>
             </div>
 
+            <hr class="sep" aria-hidden="true" />
+
             <div class="grp">
               <div class="two">
                 <div>
@@ -458,6 +461,8 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
                 </div>
               </div>
             </div>
+
+            <hr class="sep" aria-hidden="true" />
 
             <div class="acts">
               <t-button theme="primary" block :disabled="!img.hasImage.value" @click="saveToGallery">存入作品集</t-button>
@@ -503,7 +508,8 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
 </template>
 
 <style scoped>
-.app { max-width: 1600px; margin: 0 auto; padding: var(--s-8) clamp(var(--s-4), 4vw, 40px) var(--s-12); }
+/* 版心:左右留白随屏宽变化(1440 宽约 86px),内容整体落在屏幕中轴上 */
+.app { max-width: 1680px; margin: 0 auto; padding: var(--s-10) clamp(56px, 6vw, 112px) var(--s-16); }
 main:focus { outline: none; }
 
 /* 跳过导航:平时移出视口,聚焦时落回左上角 */
@@ -516,14 +522,14 @@ main:focus { outline: none; }
 }
 .skip:focus { top: var(--s-4); }
 
-/* ── 顶栏 ── */
-.head { display: flex; align-items: center; gap: var(--s-4); margin-bottom: var(--s-8); }
-.brand { display: flex; align-items: center; gap: var(--s-3); }
+/* ── 顶栏:沿中轴排列,阶梯楔在上,站名与标语居中 ── */
+.head { display: flex; justify-content: center; margin-bottom: var(--s-10); }
+.brand { display: flex; flex-direction: column; align-items: center; gap: var(--s-3); text-align: center; }
 
 /* 品牌标记 = 阶梯楔。暗房标定用的那把实物灰阶尺,五个硬边台阶,
    不是一道平滑渐变——色阶本来就是离散的十阶,标记也该是离散的。 */
 .mark {
-  width: 28px; height: 20px; border-radius: var(--r-tick); flex: none;
+  width: 40px; height: 28px; border-radius: var(--r-tick); flex: none;
   background: linear-gradient(90deg,
     var(--td-brand-color-2) 0 20%,
     var(--td-brand-color-4) 20% 40%,
@@ -532,15 +538,16 @@ main:focus { outline: none; }
     var(--td-brand-color-10) 80% 100%);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
 }
-h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0; line-height: 1.1; }
-.tag { color: var(--td-text-color-secondary); font-size: var(--t-small); margin: 2px 0 0; }
+/* 站名略微拉开字距;左侧补同样的量,抵消最后一个字后面的字距,保证视觉上仍在中轴 */
+h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; padding-left: .06em; margin: 0; line-height: 1.15; }
+.tag { color: var(--td-text-color-secondary); font-size: var(--t-base); margin: var(--s-2) 0 0; }
 
-/* ── tab:细,下沉,不抢戏 ── */
-.tabs { display: flex; gap: var(--s-1); border-bottom: 1px solid var(--td-component-stroke); margin-bottom: var(--s-6); }
+/* ── tab:沿中轴等距排开,下方分隔线通栏;用 gap 而不是每个标签的右外边距,否则整组会偏左 ── */
+.tabs { display: flex; justify-content: center; gap: var(--s-10); border-bottom: 1px solid var(--td-component-stroke); margin-bottom: var(--s-14); }
 .tabs a {
   display: inline-flex; align-items: center; text-decoration: none;
   font: inherit; font-size: var(--t-body); font-weight: 500;
-  padding: var(--s-2) var(--s-1); margin-right: var(--s-5);
+  padding: var(--s-3) var(--s-1);
   background: none; border: 0; border-bottom: 2px solid transparent;
   color: var(--td-text-color-secondary); cursor: pointer;
   transition: color var(--ease), border-color var(--ease); margin-bottom: -1px;
@@ -552,8 +559,11 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
   background: var(--td-brand-color-1); color: var(--td-brand-color-7); border-radius: var(--r-ctl);
 }
 
-/* ── 布局:照片宽,工具窄 ── */
-.board { display: grid; grid-template-columns: minmax(0, 1fr) 288px; gap: var(--s-6); align-items: start; }
+/* ── 布局:照片宽,工具窄;两栏等高、底边对齐,整块控制在一屏之内 ── */
+.board {
+  display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--s-10); align-items: stretch;
+  height: clamp(600px, calc(100vh - 296px), 760px);
+}
 
 /* ── 灯箱台面 ── */
 .stage {
@@ -565,15 +575,19 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
   background-size: 22px 22px;
   border: 1px solid var(--stage-edge);
   border-radius: var(--r-panel);
-  padding: var(--s-4);
+  padding: var(--s-6);
+  display: flex; flex-direction: column; min-height: 0;
   /* 台面自己不投影(见 style.css 规矩 2),这道内高光是灯箱边框的倒角 */
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03);
 }
 
+/* 照片区占满台面剩余高度,照片在其中完整显示并居中:竖图左右留白相等 */
+.shot-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+
 /* 全站唯一投影的所有者:台面上那张相纸 */
 .shot {
-  max-width: 100%; max-height: calc(100vh - 250px);
-  width: auto; height: auto; display: block; margin: 0 auto;
+  max-width: 100%; max-height: 100%;
+  width: auto; height: auto; display: block;
   border-radius: var(--r-ctl);
   box-shadow: var(--lift-print);
 }
@@ -584,13 +598,15 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
    小样是照片,所以按规矩 2 允许轻投影;悬停与聚焦只加描边,不位移。 */
 .stage.dragging { border-color: var(--td-brand-color); box-shadow: inset 0 0 0 1px var(--td-brand-color); }
 
+/* 空台面沿中轴排列:标题、说明、按钮、提示、小样依次居中 */
 .intro {
-  min-height: 400px; padding: var(--s-4);
-  display: flex; flex-direction: column; justify-content: center; gap: var(--s-4);
+  flex: 1; min-height: 0; padding: var(--s-4);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-4);
+  text-align: center;
 }
-.intro-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
+.intro-head { display: flex; flex-direction: column; align-items: center; gap: var(--s-5); }
 .intro-title { display: block; font-size: var(--t-h1); font-weight: 600; letter-spacing: -.01em; color: var(--stage-ink); }
-.intro-sub { display: block; margin-top: var(--s-1); font-size: var(--t-small); color: var(--stage-ink-dim); }
+.intro-sub { display: block; margin-top: var(--s-2); font-size: var(--t-small); color: var(--stage-ink-dim); }
 
 /* 上传入口。类名沿用 .drop:端到端测试靠它确认键盘能到达上传控件 */
 .drop {
@@ -603,11 +619,11 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
 .drop:hover { background: var(--td-brand-color-8); }
 .drop:focus-within { outline: 2px solid var(--stage-ink); outline-offset: 2px; }
 
-.intro-hint { margin: var(--s-4) 0 0; font-size: var(--t-small); color: var(--stage-ink-dim); }
-.contact { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--s-3); }
+.intro-hint { margin: var(--s-8) 0 0; font-size: var(--t-small); color: var(--stage-ink-dim); }
+.contact { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--s-4); }
 .print {
   display: flex; flex-direction: column; width: 100%; padding: 0;
-  border: 0; background: none; cursor: pointer; text-align: left; font: inherit;
+  border: 0; background: none; cursor: pointer; text-align: center; font: inherit;
 }
 .print img {
   display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
@@ -624,7 +640,7 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
 .print:focus-visible { outline: none; }
 .print:disabled { cursor: progress; opacity: .6; }
 
-.stage-foot { display: flex; align-items: center; gap: var(--s-1); margin-top: var(--s-3); }
+.stage-foot { flex: none; display: flex; align-items: center; gap: var(--s-1); margin-top: var(--s-4); }
 .ghost {
   font: inherit; font-size: var(--t-base); padding: 5px var(--s-3); border-radius: var(--r-ctl);
   background: rgba(255, 255, 255, .05); border: 1px solid var(--stage-edge);
@@ -638,9 +654,15 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
 /* 读数条:不用中点串接,靠间距和等宽数字分开 */
 .readout { display: flex; align-items: baseline; gap: var(--s-3); }
 
-/* ── 工具区:靠间距分组,一个盒子都不要 ── */
-.tools { display: flex; flex-direction: column; gap: var(--s-6); }
+/* ── 工具区:分隔线是和各组并列的独立一项,space-between 把余下高度平均分到每条线的上下,线始终在两组正中;
+   按钮组贴底,和台面底边对齐。屏幕太矮放不下时在栏内滚动。
+   左右各留 3px 内边距再用负外边距抵消:滚动容器会裁掉贴边控件的焦点框 ── */
+.tools {
+  display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-3);
+  min-height: 0; overflow-y: auto; padding-inline: 3px; margin-inline: -3px;
+}
 .grp { display: flex; flex-direction: column; }
+.sep { flex: none; margin: 0; border: 0; border-top: 1px solid var(--td-component-stroke); }
 .grp-h {
   font-size: var(--t-small); font-weight: 500;
   color: var(--td-text-color-secondary);
@@ -707,7 +729,7 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
 
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: start; }
 
-.acts { display: flex; flex-direction: column; gap: var(--s-2); margin-top: 2px; }
+.acts { display: flex; flex-direction: column; gap: var(--s-2); }
 .acts-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
 .acts-row :deep(.t-button) { width: 100%; }
 
@@ -716,8 +738,9 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
 
 @media (max-width: 880px) {
   .contact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .board { grid-template-columns: 1fr; gap: var(--s-5); }
-  .app { padding: var(--s-5) var(--s-3) var(--s-12); }
+  .board { grid-template-columns: 1fr; gap: var(--s-5); height: auto; }
+  .app { padding: var(--s-6) var(--s-4) var(--s-12); }
+  .tabs { gap: var(--s-3); }
   .shot { max-height: 54vh; }
 }
 </style>

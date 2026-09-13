@@ -46,12 +46,11 @@ function rampOf(hex: string) {
     <h2 class="sr-only">预设库</h2>
     <div class="lib-bar">
       <t-input
-        :value="props.keyword" size="small" clearable
-        placeholder="搜索名字或色值" style="max-width: 260px"
+        :value="props.keyword" clearable
+        placeholder="搜索名字或色值" style="width: 360px"
         aria-label="在预设库里搜索" autocomplete="off"
         @change="(v: unknown) => emit('update:keyword', String(v ?? ''))"
       />
-      <span class="grow" />
       <span class="muted tiny mono">{{ props.presets.length }} 个预设</span>
     </div>
 
@@ -98,12 +97,15 @@ function rampOf(hex: string) {
 </template>
 
 <style scoped>
-.lib-bar { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
+/* 面板至少占半屏多一点;搜索框与计数沿中轴排列,空状态放在余下区域的正中 */
+.lib { min-height: 56vh; display: flex; flex-direction: column; }
+.lib > .t-empty { margin: auto; }
+.lib-bar { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); margin-bottom: var(--s-10); }
 .grow { flex: 1; }
 .muted { color: var(--td-text-color-secondary); }
 .tiny { font-size: var(--t-micro); }
 
-.grid { display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 
 .card {
   background: var(--td-bg-color-container);

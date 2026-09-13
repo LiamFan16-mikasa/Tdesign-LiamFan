@@ -56,8 +56,11 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-.loading { padding: var(--s-8) 0; display: flex; justify-content: center; }
-.grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+/* 面板至少占半屏多一点:读库中与空状态放在这块区域的正中,不贴着导航 */
+.gallery { min-height: 56vh; display: flex; flex-direction: column; }
+.loading, .gallery > .t-empty { margin: auto; }
+.loading { display: flex; justify-content: center; }
+.grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .work { margin: 0; }
 
 /* 缩略图是相纸,允许投影(全站只有照片投影);悬停不位移,只亮描边 */

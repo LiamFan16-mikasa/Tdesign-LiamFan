@@ -100,7 +100,8 @@ const GLYPH_NAMES: Record<string, string> = {
 </template>
 
 <style scoped>
-.profile { max-width: 480px; }
+/* 个人卡片落在中轴上 */
+.profile { max-width: 560px; margin: 0 auto; }
 .card { border: 1px solid var(--td-component-stroke); border-radius: var(--r-panel); overflow: hidden; }
 
 /* 头图:暗房台面当底,底边贴一条真实色带 */
@@ -141,7 +142,7 @@ const GLYPH_NAMES: Record<string, string> = {
 .glyph:hover { color: var(--td-brand-color); border-color: var(--td-brand-color); }
 .glyph.on { color: #fff; background: var(--td-brand-color); border-color: var(--td-brand-color); }
 
-.note { margin: var(--s-3) 2px 0; }
+.note { margin: var(--s-4) 0 0; text-align: center; }
 .dim { color: var(--td-text-color-secondary); }
 .tiny { font-size: var(--t-micro); }
 </style>
