@@ -93,7 +93,7 @@ const GLYPH_NAMES: Record<string, string> = {
       </div>
     </div>
 
-    <p class="note dim tiny">
+    <p class="note dim tiny on-dark">
       个人设置保存在这台设备的浏览器里，不上传服务器，也不跨设备同步。
     </p>
   </div>

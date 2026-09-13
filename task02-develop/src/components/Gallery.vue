@@ -22,18 +22,19 @@ const emit = defineEmits<{
 
     <!-- 三态要分开:读库中 / 读完没有 / 有作品。
          之前没有「读库中」这一态，IndexedDB 还没返回时会落进 v-else 渲染出一个空网格，整页空白 -->
-    <div v-if="!props.ready" class="loading">
+    <div v-if="!props.ready" class="loading on-dark">
       <t-loading size="small" text="正在读取作品集…" />
     </div>
 
     <!-- TDesign 的 title 为空时会回退成默认的「暂无数据」,所以要给一个真标题,描述只说下一步 -->
     <t-empty
       v-else-if="!props.works.length"
+      class="on-dark"
       title="还没有作品"
       description="在调色台调出满意的一版，点「存入作品集」。"
     />
 
-    <div v-else class="grid">
+    <div v-else class="grid on-dark">
       <figure v-for="w in props.works" :key="w.id" class="work">
         <button class="frame" :aria-label="`还原 ${w.title || '这张作品'}`" @click="emit('apply', w)">
           <img :src="w.thumb" :alt="w.title || '作品'" loading="lazy" decoding="async" />

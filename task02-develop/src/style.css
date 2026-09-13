@@ -63,10 +63,10 @@
   --lift-print: 0 6px 24px rgba(0, 0, 0, .4), 0 0 0 1px rgba(0, 0, 0, .3);
   --lift-thumb: 0 1px 3px rgba(0, 0, 0, .14);
 
-  /* ── 磨砂玻璃:浮在流动背景上的内容面板,保证文字对比度 ── */
-  --glass: rgba(255, 255, 255, .86);
-  --glass-edge: rgba(255, 255, 255, .55);
-  --glass-filter: blur(24px) saturate(1.2);
+  /* ── 深色磨砂玻璃:浮在流动背景上的内容面板,和暗房台面同一种材质 ── */
+  --glass: rgba(20, 22, 27, .72);
+  --glass-edge: rgba(255, 255, 255, .08);
+  --glass-filter: blur(24px) saturate(1.1);
 
   --ease: .15s ease;
 }
@@ -108,6 +108,29 @@ body {
 .file-input {
   position: absolute; width: 1px; height: 1px;
   opacity: 0; pointer-events: none;
+}
+
+/* 深色玻璃面板里的内容:把 TDesign 的文字、底色、描边 token 局部换成浅色一套,
+   面板内的输入框、下拉框、滑块、按钮随之变成深色风格。
+   下拉菜单、取色器这类弹层挂在 body 上,不在面板内,保持默认浅色。 */
+.on-dark {
+  color: rgba(255, 255, 255, .9);
+  --td-text-color-primary: rgba(255, 255, 255, .9);
+  --td-text-color-secondary: rgba(255, 255, 255, .66);
+  --td-text-color-placeholder: rgba(255, 255, 255, .42);
+  --td-text-color-disabled: rgba(255, 255, 255, .3);
+  --td-bg-color-container: rgba(255, 255, 255, .06);
+  --td-bg-color-container-hover: rgba(255, 255, 255, .1);
+  --td-bg-color-container-active: rgba(255, 255, 255, .14);
+  --td-bg-color-secondarycontainer: rgba(255, 255, 255, .08);
+  --td-bg-color-component: rgba(255, 255, 255, .16);
+  --td-bg-color-component-hover: rgba(255, 255, 255, .22);
+  --td-bg-color-component-disabled: rgba(255, 255, 255, .08);
+  --td-bg-color-specialcomponent: rgba(255, 255, 255, .06);
+  --td-component-border: rgba(255, 255, 255, .18);
+  --td-component-stroke: rgba(255, 255, 255, .12);
+  --td-border-level-1-color: rgba(255, 255, 255, .12);
+  --td-border-level-2-color: rgba(255, 255, 255, .18);
 }
 
 /* 键盘焦点在任何地方都要看得见 */

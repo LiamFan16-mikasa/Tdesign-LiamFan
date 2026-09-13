@@ -21,6 +21,12 @@ const props = defineProps<{
   photo: boolean;
   /** 没放照片时轮播的示例图地址 */
   samples: string[];
+  /**
+   * 工作状态:照片已在调色台上。
+   * 调色时周围的颜色会改变人对照片颜色的感知,所以背景要退成接近中性的深色、停止漂移;
+   * 离开调色台或还没放照片时回到鲜艳流动的展示状态。
+   */
+  working: boolean;
 }>();
 
 const W = 96;
@@ -159,12 +165,13 @@ onBeforeUnmount(stopSlideshow);
 </script>
 
 <template>
-  <div class="backdrop-wrap" aria-hidden="true">
+  <div class="backdrop-wrap" :class="{ working: props.working }" aria-hidden="true">
     <canvas
       ref="canvas" class="backdrop" :width="W" :height="H"
       :data-source="props.photo ? 'photo' : 'samples'"
       :data-sample-index="sampleIndex"
       :data-slideshow="slideshowOn ? 'on' : 'off'"
+      :data-mode="props.working ? 'working' : 'showcase'"
     />
     <div class="scrim" />
   </div>
@@ -182,6 +189,13 @@ onBeforeUnmount(stopSlideshow);
   filter: blur(56px) saturate(1.35);
   transform-origin: 50% 50%;
   animation: drift 40s ease-in-out infinite alternate;
+  transition: filter .8s ease;
+}
+
+/* 工作状态:去掉大部分饱和度并压暗,台面四周接近中性;漂移原地暂停,不会跳回起点 */
+.working .backdrop {
+  filter: blur(56px) saturate(.25) brightness(.55);
+  animation-play-state: paused;
 }
 
 /* 流动感:缓慢放大并平移,一个来回约 40 秒 */
@@ -199,6 +213,7 @@ onBeforeUnmount(stopSlideshow);
     rgba(8, 10, 14, .36) 560px,
     rgba(8, 10, 14, .30) 100%);
 }
+.working .scrim { background: rgba(8, 10, 14, .72); }
 
 @media (prefers-reduced-motion: reduce) {
   .backdrop { animation: none; }

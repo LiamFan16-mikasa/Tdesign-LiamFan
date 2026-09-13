@@ -138,6 +138,9 @@ const activeTone = computed(() => candidates.value.find((t) => t.hex.toUpperCase
 
 // 面板状态存在 URL 的 hash 里,不是本地 ref —— 可链接、可后退、可新标签页打开
 const { tab } = useTabRoute();
+
+/** 工作状态:照片已在调色台上。背景退成中性、页头收成一行 */
+const studioWorking = computed(() => img.hasImage.value && tab.value === 'studio');
 const presets = usePresets();
 const saving = ref(false);
 const draftName = ref('');
@@ -288,11 +291,11 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
 </script>
 
 <template>
-  <div class="app">
+  <div class="app" :class="{ working: studioWorking }">
     <a class="skip" href="#main" @click.prevent="focusMain">跳到主要内容</a>
 
     <!-- 整页流动的色彩背景:没放照片时轮播示例,放上后跟随调色结果 -->
-    <Backdrop :source="img.canvas.value" :version="img.renderCount.value" :photo="img.hasImage.value" :samples="SAMPLE_COVERS" />
+    <Backdrop :source="img.canvas.value" :version="img.renderCount.value" :photo="img.hasImage.value" :samples="SAMPLE_COVERS" :working="studioWorking" />
 
     <header class="head">
       <div class="brand">
@@ -384,7 +387,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
           </section>
 
           <!-- 工具:分组,靠间距分区,不用盒子 -->
-          <aside class="tools" aria-label="调色参数">
+          <aside class="tools on-dark" aria-label="调色参数">
             <div class="grp">
               <h3 class="grp-h">
                 色调<span v-if="candidates.length" class="grp-v dim tiny">从这张照片提取</span>
@@ -696,7 +699,7 @@ h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; paddi
   transition: box-shadow var(--ease), border-color var(--ease);
 }
 .tone:hover .tone-chip { border-color: var(--td-text-color-primary); }
-.tone.on .tone-chip { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--td-brand-color); }
+.tone.on .tone-chip { box-shadow: 0 0 0 2px var(--stage), 0 0 0 3px var(--td-brand-color); }
 .tone-name { font-size: var(--t-micro); color: var(--td-text-color-secondary); text-align: center; }
 .tone.on .tone-name { color: var(--td-brand-color); }
 .tone:focus-visible { outline-offset: 2px; border-radius: var(--r-ctl); }
@@ -743,11 +746,27 @@ h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; paddi
 .acts { display: flex; flex-direction: column; gap: var(--s-2); }
 .acts-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
 .acts-row :deep(.t-button) { width: 100%; }
+/* 深色面板上的禁用主按钮:保留主色、半透明,不再是一片发白的浅青 */
+.acts :deep(.t-button--theme-primary.t-is-disabled) {
+  background-color: var(--td-brand-color); border-color: var(--td-brand-color); color: #fff; opacity: .45;
+}
 
 .dim { color: var(--td-text-color-secondary); }
 .tiny { font-size: var(--t-micro); }
 
+/* ── 工作状态:照片已在调色台上,页头收成一行、标语隐藏,把高度让给台面 ── */
+.app, .head, .tabs { transition: padding .3s ease, margin .3s ease; }
+.app.working { padding-top: var(--s-5); }
+.app.working .head { margin-bottom: var(--s-3); }
+.app.working .brand { flex-direction: row; gap: var(--s-2); }
+.app.working .mark { width: 24px; height: 17px; }
+.app.working h1 { font-size: var(--t-title); letter-spacing: .04em; padding-left: .04em; }
+.app.working .tag { display: none; }
+.app.working .tabs { margin-bottom: var(--s-6); }
+.app.working .board { height: clamp(600px, calc(100vh - 160px), 880px); }
+
 @media (max-width: 880px) {
+  .app.working .board { height: auto; }
   .contact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .board { grid-template-columns: 1fr; gap: var(--s-5); height: auto; }
   .app { padding: var(--s-6) var(--s-4) var(--s-12); }

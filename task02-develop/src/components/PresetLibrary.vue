@@ -44,7 +44,7 @@ function rampOf(hex: string) {
 <template>
   <div class="lib">
     <h2 class="sr-only">预设库</h2>
-    <div class="lib-bar">
+    <div class="lib-bar on-dark">
       <t-input
         :value="props.keyword" clearable
         placeholder="搜索名字或色值" style="width: 360px; max-width: 100%"
@@ -59,6 +59,7 @@ function rampOf(hex: string) {
     <!-- presets 是搜索过滤后的列表:搜不到和一个都没有要分开说,否则有预设时搜空了也显示「还没有预设」 -->
     <t-empty
       v-if="!props.presets.length"
+      class="on-dark"
       :title="props.keyword ? '没有匹配的预设' : '还没有预设'"
       :description="props.keyword ? '换个名字或色值试试，或清空搜索框。' : '在调色台调出满意的效果后，点「存为预设」。'"
     />

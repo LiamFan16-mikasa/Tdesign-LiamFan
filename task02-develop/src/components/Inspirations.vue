@@ -23,7 +23,7 @@ function rampOf(hex: string) {
 <template>
   <div class="insp">
     <h2 class="sr-only">灵感</h2>
-    <p class="lead dim">
+    <p class="lead dim on-dark">
       开箱即有的调色范例。选一个套用到你的照片上——每个范例是一套色调、混合模式与映射区间的组合。
     </p>
 
