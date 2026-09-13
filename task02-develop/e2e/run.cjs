@@ -293,6 +293,39 @@ function assert(cond, msg) { if (!cond) throw new Error(msg); }
     await page.screenshot({ path: path.join(OUT, 'me.png') });
   });
 
+  /* ───────────── 空台面示例 ───────────── */
+
+  await step('空台面示例:点一张小样,照片和它的参数一起上台', async () => {
+    // 全新上下文,确保台面是空的;期望参数从灵感库同一张卡片上读,不在测试里写死
+    const c2 = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const sp = await c2.newPage();
+    try {
+      await sp.goto(BASE + '#inspire', { waitUntil: 'networkidle' });
+      const card = sp.locator('.insp .card').nth(2);
+      const [, a, b] = (await card.locator('.ramp').getAttribute('aria-label')).match(/(\d+) 到 (\d+)/);
+      const title = (await card.locator('h3').textContent()).trim();
+      const strengthText = (await card.locator('.meta .mono').textContent()).trim().replace('%', '');
+
+      await sp.locator('nav.tabs a[href="#studio"]').click();
+      const print = sp.locator('.contact .print').nth(2);
+      assert((await print.locator('.print-name').textContent()).trim() === title, '小样与灵感卡片顺序不一致');
+      await print.click();
+      await sp.locator('canvas.shot').waitFor({ state: 'visible', timeout: 15000 });
+      await sp.locator('.tones .tone').first().waitFor({ timeout: 15000 });
+      await sp.waitForTimeout(300);
+
+      const read = async (label) => (await sp.locator('.grp-h', { hasText: label }).locator('.grp-v').textContent()).trim();
+      const v = await read('映射区间');
+      const st = await read('强度');
+      assert(v === `${a}–${b}`, `区间应为 ${a}–${b},实际 ${v}(可能被自动套用候选色覆盖)`);
+      assert(st === strengthText, `强度应为 ${strengthText},实际 ${st}`);
+      assert(await sp.locator('.contact').count() === 0, '照片上台后印样仍在');
+      return `「${title}」${v},强度 ${st}`;
+    } finally {
+      await c2.close();
+    }
+  });
+
   /* ───────────── 真 390px 视口(不受无头窗口最小宽度限制) ───────────── */
 
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });

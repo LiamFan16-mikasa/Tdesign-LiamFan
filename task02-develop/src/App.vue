@@ -18,7 +18,8 @@ import { useTabRoute, TABS, TAB_LABELS } from './composables/useTabRoute';
 import PresetLibrary from './components/PresetLibrary.vue';
 import Gallery from './components/Gallery.vue';
 import Inspirations from './components/Inspirations.vue';
-import type { Inspiration } from './inspirations';
+import { INSPIRATIONS, type Inspiration } from './inspirations';
+import { generatePalette } from '@palette/palette';
 import ProfilePanel from './components/ProfilePanel.vue';
 import CvdCheck from './components/CvdCheck.vue';
 import ExportPanel from './components/ExportPanel.vue';
@@ -53,6 +54,25 @@ const ramp = computed(() => palette.value?.brand);
 const candidates = ref<Candidate[]>([]);
 const analyzing = ref(false);
 
+/* ------------------------- 空台面:示例印样 ------------------------- */
+
+/** 空台面上每张示例小样底边的色阶,按示例主色生成一次 */
+const SAMPLE_RAMPS = INSPIRATIONS.map((i) => generatePalette(i.hex, 'light')?.brand ?? []);
+
+/**
+ * 从示例小样放上台面时记下是哪一张。
+ * 载入完成后的下一帧会「自动套用第一条候选色」,那一帧里要改为套用示例自己的参数,否则会被覆盖。
+ */
+let pendingSample: Inspiration | null = null;
+const sampleLoading = ref(false);
+
+/** 拖着文件经过台面时亮起描边。进入子元素也会触发 dragleave,所以要判断是不是真的离开了台面 */
+const dragging = ref(false);
+function onDragLeave(e: DragEvent) {
+  const to = e.relatedTarget as Node | null;
+  if (!to || !(e.currentTarget as HTMLElement).contains(to)) dragging.value = false;
+}
+
 const { profile } = useProfile();
 const gallery = useGallery();
 
@@ -63,9 +83,15 @@ const img = useImage({
     // 让出一帧,先把照片画上去,再分析,避免大图分析阻塞首次渲染
     requestAnimationFrame(() => {
       candidates.value = candidatesFrom(preview);
-      // 自动选中第一条候选(原色),用户立刻看到一个成品而不是原图。
-      // 是否自动套用尊重个人中心里的设置。
-      if (candidates.value.length && profile.value.autoApply) raw.value = candidates.value[0].hex;
+      if (pendingSample) {
+        // 从示例小样放上台的:用示例自己的调色参数,不被下面的自动套用覆盖
+        setParams(pendingSample);
+        pendingSample = null;
+      } else if (candidates.value.length && profile.value.autoApply) {
+        // 自动选中第一条候选(原色),用户立刻看到一个成品而不是原图。
+        // 是否自动套用尊重个人中心里的设置。
+        raw.value = candidates.value[0].hex;
+      }
       analyzing.value = false;
     });
   },
@@ -149,11 +175,39 @@ function applyWork(w: Work) {
   MessagePlugin.success('已还原这张作品的调色');
 }
 
-function applyInspiration(i: Inspiration) {
+/** 把一套范例参数写进调色台 */
+function setParams(i: Inspiration) {
   raw.value = i.hex;
   blend.value = i.blend;
   strength.value = i.strength;
   range.value = [...i.range] as [number, number];
+}
+
+/**
+ * 空台面上点一张示例小样:照片和它的调色参数一起放上台面。
+ * 示例图片是站内资源,取回来包装成 File,走和上传完全相同的载入流程。
+ */
+async function loadSample(i: Inspiration) {
+  sampleLoading.value = true;
+  try {
+    const res = await fetch(i.cover);
+    if (!res.ok) throw new Error(String(res.status));
+    const blob = await res.blob();
+    pendingSample = i;
+    await img.load(new File([blob], `${i.id}.jpg`, { type: blob.type || 'image/jpeg' }));
+    if (img.error.value || !img.hasImage.value) throw new Error(img.error.value);
+    MessagePlugin.success(`已把「${i.title}」连同调色参数放上台面`);
+  } catch {
+    // 载入失败要清掉,否则下一次用户自己上传时会误套这张示例的参数
+    pendingSample = null;
+    MessagePlugin.error('示例照片没有载入，换一张示例，或选择自己的照片');
+  } finally {
+    sampleLoading.value = false;
+  }
+}
+
+function applyInspiration(i: Inspiration) {
+  setParams(i);
   tab.value = 'studio';
   MessagePlugin.success(img.hasImage.value ? `已套用「${i.title}」` : `已选「${i.title}」，上传照片即可看到效果`);
 }
@@ -210,6 +264,7 @@ function onFile(e: Event) {
   el.value = '';
 }
 function onDrop(e: DragEvent) {
+  dragging.value = false;
   const f = e.dataTransfer?.files?.[0];
   if (f) img.load(f);
 }
@@ -257,20 +312,52 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
 
         <div class="board">
           <!-- 照片:深色灯箱台面 -->
-          <section class="stage" aria-label="照片台面" @dragover.prevent @drop.prevent="onDrop">
+          <section
+            class="stage" :class="{ dragging }" aria-label="照片台面"
+            @dragover.prevent="dragging = true" @dragleave="onDragLeave" @drop.prevent="onDrop"
+          >
             <canvas
               v-show="img.hasImage.value" :ref="(e: any) => (img.canvas.value = e)"
               class="shot" role="img" :aria-label="shotAlt"
             />
 
-            <label v-if="!img.hasImage.value" class="drop">
-              <!-- 不能用 hidden:那会把 input 移出 tab 序列,键盘就再也上传不了 -->
-              <input type="file" accept="image/*" class="file-input" @change="onFile" />
-              <span class="drop-mark" aria-hidden="true"></span>
-              <strong>把一张风光照放上台面</strong>
-              <span class="dim">拖进来，或点击选择</span>
-              <span class="dim mono formats">jpg / png / webp</span>
-            </label>
+            <!-- 空台面是一张印样:上面放自己照片的入口,下面一排示例小样,点一张直接上台 -->
+            <div v-if="!img.hasImage.value" class="intro">
+              <div class="intro-head">
+                <div>
+                  <strong class="intro-title">把一张风光照放上台面</strong>
+                  <span class="intro-sub">拖到台面上任意位置，或者点「选择照片」。jpg、png、webp 都可以。</span>
+                </div>
+                <label class="drop">
+                  <!-- 不能用 hidden:那会把 input 移出 tab 序列,键盘就再也上传不了 -->
+                  <input type="file" accept="image/*" class="file-input" @change="onFile" />选择照片
+                </label>
+              </div>
+            
+              <p class="intro-hint">手边没有合适的照片？点一张示例，照片和它的调色参数会一起放上台面。</p>
+              <ul class="contact" aria-label="示例照片">
+                <li v-for="(s, k) in INSPIRATIONS" :key="s.id">
+                  <button
+                    class="print" :disabled="sampleLoading"
+                    :aria-label="`用示例「${s.title}」：照片和调色参数一起放上台面`"
+                    @click="loadSample(s)"
+                  >
+                    <img
+                      :src="s.cover" alt="" loading="lazy" decoding="async"
+                      :style="s.coverPosition ? { objectPosition: s.coverPosition } : undefined"
+                    />
+                    <span class="print-ramp" aria-hidden="true">
+                      <i
+                        v-for="sw in SAMPLE_RAMPS[k]" :key="sw.index"
+                        :class="{ off: sw.index < s.range[0] || sw.index > s.range[1] }"
+                        :style="{ background: sw.hex }"
+                      />
+                    </span>
+                    <span class="print-name">{{ s.title }}</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
 
             <div v-if="img.hasImage.value" class="stage-foot">
               <button
@@ -302,7 +389,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
               </div>
 
               <p v-else-if="!candidates.length" class="dim tiny hint" style="margin: 0">
-                上传照片后，这里会给出几条从它色彩里提取的色调。
+                放上照片后，这里会给出几条从它色彩里提取的色调。
               </p>
 
               <div v-else class="tones">
@@ -491,33 +578,51 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
   box-shadow: var(--lift-print);
 }
 
+/* ── 空台面:一张印样 ──
+   暗房里挑片,是把一排小样摊在灯箱上看。台面没有照片时就这么摆:
+   上面是放自己照片的入口,下面一排示例小样,底边贴着各自的色阶(区间外压暗)。
+   小样是照片,所以按规矩 2 允许轻投影;悬停与聚焦只加描边,不位移。 */
+.stage.dragging { border-color: var(--td-brand-color); box-shadow: inset 0 0 0 1px var(--td-brand-color); }
+
+.intro {
+  min-height: 400px; padding: var(--s-4);
+  display: flex; flex-direction: column; justify-content: center; gap: var(--s-4);
+}
+.intro-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
+.intro-title { display: block; font-size: var(--t-h1); font-weight: 600; letter-spacing: -.01em; color: var(--stage-ink); }
+.intro-sub { display: block; margin-top: var(--s-1); font-size: var(--t-small); color: var(--stage-ink-dim); }
+
+/* 上传入口。类名沿用 .drop:端到端测试靠它确认键盘能到达上传控件 */
 .drop {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-2);
-  min-height: 400px; cursor: pointer; border-radius: var(--r-panel);
-  border: 1px dashed var(--stage-edge);
-  color: var(--stage-ink-dim);
-  transition: border-color .2s, color .2s;
+  position: relative; flex: none; cursor: pointer;
+  padding: var(--s-2) var(--s-5); border-radius: var(--r-ctl);
+  background: var(--td-brand-color); color: #fff;
+  font-size: var(--t-body); font-weight: 500;
+  transition: background-color var(--ease);
 }
-.drop:hover,
-.drop:focus-within { border-color: var(--td-brand-color); color: var(--stage-ink); }
-.drop:focus-within { outline: 2px solid var(--td-brand-color); outline-offset: 2px; }
-.drop strong { font-weight: 600; font-size: var(--t-title); color: var(--stage-ink); }
-/* .dim 默认是浅色主题的次要字色(深灰),压在深色台面上几乎看不见,这里要改回台面字色 */
-.drop .dim { font-size: var(--t-small); color: var(--stage-ink-dim); }
-.drop .formats { font-size: var(--t-micro); opacity: .75; letter-spacing: .02em; }
-.drop-mark {
-  width: 42px; height: 30px; border-radius: var(--r-ctl);
-  border: 1.5px solid currentColor; opacity: .5;
-  position: relative;
+.drop:hover { background: var(--td-brand-color-8); }
+.drop:focus-within { outline: 2px solid var(--stage-ink); outline-offset: 2px; }
+
+.intro-hint { margin: var(--s-4) 0 0; font-size: var(--t-small); color: var(--stage-ink-dim); }
+.contact { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--s-3); }
+.print {
+  display: flex; flex-direction: column; width: 100%; padding: 0;
+  border: 0; background: none; cursor: pointer; text-align: left; font: inherit;
 }
-/* 空台面上的图标里也放一把阶梯楔,和品牌标记同一个物件 */
-.drop-mark::after {
-  content: ""; position: absolute; left: 6px; right: 6px; bottom: 6px; height: 8px; border-radius: var(--r-tick);
-  background: linear-gradient(90deg,
-    var(--td-brand-color-3) 0 33%,
-    var(--td-brand-color-6) 33% 66%,
-    var(--td-brand-color-9) 66% 100%);
+.print img {
+  display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: var(--r-ctl) var(--r-ctl) 0 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), var(--lift-thumb);
+  transition: box-shadow var(--ease);
 }
+.print-ramp { display: flex; height: 4px; }
+.print-ramp i { flex: 1; }
+.print-ramp i.off { opacity: .25; }
+.print-name { margin-top: var(--s-2); font-size: var(--t-small); color: var(--stage-ink-dim); transition: color var(--ease); }
+.print:hover img, .print:focus-visible img { box-shadow: 0 0 0 2px var(--stage-ink), var(--lift-thumb); }
+.print:hover .print-name, .print:focus-visible .print-name { color: var(--stage-ink); }
+.print:focus-visible { outline: none; }
+.print:disabled { cursor: progress; opacity: .6; }
 
 .stage-foot { display: flex; align-items: center; gap: var(--s-1); margin-top: var(--s-3); }
 .ghost {
@@ -610,6 +715,7 @@ h1 { font-size: var(--t-h1); font-weight: 600; letter-spacing: -.02em; margin: 0
 .tiny { font-size: var(--t-micro); }
 
 @media (max-width: 880px) {
+  .contact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .board { grid-template-columns: 1fr; gap: var(--s-5); }
   .app { padding: var(--s-5) var(--s-3) var(--s-12); }
   .shot { max-height: 54vh; }
