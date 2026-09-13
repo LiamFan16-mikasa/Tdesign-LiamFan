@@ -94,7 +94,7 @@ const GLYPH_NAMES: Record<string, string> = {
     </div>
 
     <p class="note dim tiny">
-      个人设置保存在这台设备的浏览器里,不上传服务器,也不跨设备同步。
+      个人设置保存在这台设备的浏览器里，不上传服务器，也不跨设备同步。
     </p>
   </div>
 </template>

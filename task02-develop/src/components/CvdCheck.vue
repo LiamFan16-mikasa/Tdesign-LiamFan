@@ -27,9 +27,9 @@ const TYPES: CvdType[] = ['none', 'protanopia', 'deuteranopia', 'tritanopia', 'a
 const NOTES: Record<CvdType, { what: string; rate: string }> = {
   none: { what: '你现在看到的样子', rate: '' },
   protanopia: { what: '红色感知缺失', rate: '男性约 1%' },
-  deuteranopia: { what: '绿色感知缺失,最常见', rate: '男性约 6%' },
+  deuteranopia: { what: '绿色感知缺失，最常见', rate: '男性约 6%' },
   tritanopia: { what: '蓝黄感知缺失', rate: '罕见' },
-  achromatopsia: { what: '完全无色觉,只剩明暗', rate: '' },
+  achromatopsia: { what: '完全无色觉，只剩明暗', rate: '' },
 };
 
 const canvases = ref<Record<string, HTMLCanvasElement | null>>({});

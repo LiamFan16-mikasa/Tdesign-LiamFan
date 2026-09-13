@@ -155,7 +155,7 @@ function applyInspiration(i: Inspiration) {
   strength.value = i.strength;
   range.value = [...i.range] as [number, number];
   tab.value = 'studio';
-  MessagePlugin.success(img.hasImage.value ? `已套用「${i.title}」` : `已选「${i.title}」,上传照片即可看到效果`);
+  MessagePlugin.success(img.hasImage.value ? `已套用「${i.title}」` : `已选「${i.title}」，上传照片即可看到效果`);
 }
 
 function applyPreset(p: Preset) {
@@ -183,7 +183,7 @@ const tabCount = computed<Partial<Record<string, number>>>(() => ({
  */
 const shotAlt = computed(() => {
   const tone = activeTone.value?.name ?? raw.value.toUpperCase();
-  return `调色预览:色调 ${tone},混合模式 ${BLEND_LABELS[blend.value]},强度 ${strength.value}%,取色阶第 ${range.value[0]} 到第 ${range.value[1]} 阶`;
+  return `调色预览:色调 ${tone}，混合模式 ${BLEND_LABELS[blend.value]}，强度 ${strength.value}%，取色阶第 ${range.value[0]} 到第 ${range.value[1]} 阶`;
 });
 
 /**
@@ -199,7 +199,7 @@ function focusMain() {
 /** 台面右下角那两个读数,连起来读才有意义 */
 const readoutAlt = computed(() => {
   const n = img.naturalSize.value;
-  return n ? `原图 ${n.w} 乘 ${n.h} 像素,本次渲染耗时 ${img.lastRenderMs.value.toFixed(1)} 毫秒` : '';
+  return n ? `原图 ${n.w} 乘 ${n.h} 像素，本次渲染耗时 ${img.lastRenderMs.value.toFixed(1)} 毫秒` : '';
 });
 
 function onFile(e: Event) {
@@ -237,7 +237,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
         <span class="mark" aria-hidden="true"></span>
         <div>
           <h1>显影台</h1>
-          <p class="tag">滤镜不是黑盒,是一条能看见、能改、能导出的色阶</p>
+          <p class="tag">滤镜不是黑盒，是一条能看见、能改、能导出的色阶</p>
         </div>
       </div>
     </header>
@@ -268,7 +268,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
               <input type="file" accept="image/*" class="file-input" @change="onFile" />
               <span class="drop-mark" aria-hidden="true"></span>
               <strong>把一张风光照放上台面</strong>
-              <span class="dim">拖进来,或点击选择</span>
+              <span class="dim">拖进来，或点击选择</span>
               <span class="dim mono formats">jpg / png / webp</span>
             </label>
 
@@ -302,7 +302,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
               </div>
 
               <p v-else-if="!candidates.length" class="dim tiny hint" style="margin: 0">
-                上传照片后,这里会给出几条从它色彩里提取的色调。
+                上传照片后，这里会给出几条从它色彩里提取的色调。
               </p>
 
               <div v-else class="tones">
@@ -322,7 +322,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
                 <t-color-picker :model-value="valid ? raw : '#0E7C86'" format="HEX" :show-primary-color-preview="false" @change="(v: string) => (raw = v)" />
                 <input
                   class="hex mono" :value="raw" spellcheck="false"
-                  autocomplete="off" aria-label="自定义主色色值,十六进制"
+                  autocomplete="off" aria-label="自定义主色色值，十六进制"
                   :aria-invalid="valid ? undefined : 'true'"
                   @input="(e: any) => (raw = e.target.value)"
                 />
@@ -356,7 +356,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
                   >{{ r.name }}</button>
                 </t-tooltip>
               </div>
-              <p class="dim tiny hint">暗部取右端、高光取左端。区间收窄,黑场提亮、高光压低,反差变平。</p>
+              <p class="dim tiny hint">暗部取右端、高光取左端。区间收窄，黑场提亮、高光压低，反差变平。</p>
             </div>
 
             <div class="grp">
@@ -410,7 +410,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
 
     <t-dialog v-model:visible="saving" header="存为预设" :on-confirm="confirmSave" confirm-btn="存下" cancel-btn="取消">
       <t-input v-model="draftName" placeholder="给这套色调起个名字" :maxlength="24" autofocus @enter="confirmSave" />
-      <p class="dim tiny" style="margin: 10px 0 0">预设记的是色调、混合模式和强度,不是这张图。换一张照片套用它,得到的是同一种色调倾向。</p>
+      <p class="dim tiny" style="margin: 10px 0 0">预设记的是色调、混合模式和强度，不是这张图。换一张照片套用它，得到的是同一种色调倾向。</p>
     </t-dialog>
   </div>
 </template>

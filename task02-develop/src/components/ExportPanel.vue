@@ -57,7 +57,7 @@ function downloadTokens() {
   >
     <div class="sec">
       <h3 class="sec-t">照片</h3>
-      <p class="muted">按原图尺寸重新渲染导出,不是放大预览图。</p>
+      <p class="muted">按原图尺寸重新渲染导出，不是放大预览图。</p>
       <t-button theme="primary" :disabled="!props.canExportImage" @click="props.exportImage">
         导出照片
       </t-button>
@@ -68,7 +68,7 @@ function downloadTokens() {
     <div class="sec">
       <h3 class="sec-t">色阶 → Design Token</h3>
       <p class="muted">
-        你在照片上调出的色调,就是一套能贴进 TDesign 项目的主题。
+        你在照片上调出的色调，就是一套能贴进 TDesign 项目的主题。
         滤镜和主题是同一条色阶。
       </p>
       <t-radio-group v-model="format" variant="default-filled" size="small" style="margin-bottom: 12px">

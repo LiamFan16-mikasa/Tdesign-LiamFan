@@ -21,7 +21,7 @@ const emit = defineEmits<{
     <t-alert v-if="props.error" theme="warning" :message="props.error" style="margin-bottom: 16px" />
 
     <!-- 三态要分开:读库中 / 读完没有 / 有作品。
-         之前没有「读库中」这一态,IndexedDB 还没返回时会落进 v-else 渲染出一个空网格,整页空白 -->
+         之前没有「读库中」这一态，IndexedDB 还没返回时会落进 v-else 渲染出一个空网格，整页空白 -->
     <div v-if="!props.ready" class="loading">
       <t-loading size="small" text="正在读取作品集…" />
     </div>

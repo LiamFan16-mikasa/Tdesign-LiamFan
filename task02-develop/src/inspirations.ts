@@ -23,7 +23,7 @@ export interface Inspiration {
   strength: number;
   range: [number, number];
   note: string;         // 这套调色在讲什么
-  cover: string;        // 封面:src/assets/covers/<id>.jpg 存在就用照片,否则用 SVG 占位
+  cover: string;        // 封面:src/assets/covers/<id>.jpg 存在就用照片，否则用 SVG 占位
 }
 
 /* --- 封面:有真实照片用照片,没有就用生成的 SVG 意象图占位 --- */
@@ -57,37 +57,37 @@ export const INSPIRATIONS: Inspiration[] = [
   {
     id: 'insp-sunset', title: '落日海岸', scene: '日落时的海面',
     hex: '#0E7C86', blend: 'softLight', strength: 55, range: [1, 10],
-    note: '暖橙的天配青蓝的海,冷暖对撞是日落海岸最稳的解法。',
+    note: '暖橙的天配青蓝的海，冷暖对撞是日落海岸最稳的解法。',
     cover: coverFor('insp-sunset', ['#F6D9A0', '#E8A060', '#C86840', '#5A6E88', '#2A3A55']),
   },
   {
     id: 'insp-fog', title: '晨雾松林', scene: '清晨的松林',
     hex: '#2F6B4F', blend: 'softLight', strength: 40, range: [3, 9],
-    note: '窄幅映射提亮黑场,雾气不至于压成死黑,松绿也收得住。',
+    note: '窄幅映射提亮黑场，雾气不至于压成死黑，松绿也收得住。',
     cover: coverFor('insp-fog', ['#DDE5DC', '#AEC0B0', '#7E9580', '#4E6654', '#2C3E32']),
   },
   {
     id: 'insp-goldenwheat', title: '暮色麦田', scene: '黄昏的田野',
     hex: '#B8791F', blend: 'overlay', strength: 50, range: [1, 9],
-    note: '叠加模式加暖金,让黄昏的暖光更浓,麦浪更透。',
+    note: '叠加模式加暖金，让黄昏的暖光更浓，麦浪更透。',
     cover: coverFor('insp-goldenwheat', ['#F5E3B0', '#E0B860', '#C08838', '#8A5A28', '#4E3418']),
   },
   {
     id: 'insp-bluehour', title: '蓝色时刻', scene: '日落后的雪山',
     hex: '#1D4E89', blend: 'softLight', strength: 60, range: [1, 10],
-    note: '日落后二十分钟的冷调,雪山与天空同色,静。',
+    note: '日落后二十分钟的冷调，雪山与天空同色，静。',
     cover: coverFor('insp-bluehour', ['#C4D4E8', '#8AA4C8', '#4E6E9C', '#2E4670', '#1A2A48']),
   },
   {
-    id: 'insp-fadedfilm', title: '褪色胶片', scene: '阴天,任何题材',
+    id: 'insp-fadedfilm', title: '褪色胶片', scene: '阴天，任何题材',
     hex: '#8C7B6B', blend: 'softLight', strength: 45, range: [4, 8],
-    note: '整体降饱和、压反差,阴天雾天也不发灰,老胶片的味道。',
+    note: '整体降饱和、压反差，阴天雾天也不发灰，老胶片的味道。',
     cover: coverFor('insp-fadedfilm', ['#E4DDD2', '#C4B8A8', '#A0917E', '#78685A', '#4E4238']),
   },
   {
     id: 'insp-canyon', title: '峡谷赭石', scene: '正午的红土',
     hex: '#9C4A2F', blend: 'overlay', strength: 48, range: [1, 9],
-    note: '赭红压进暗部,峡谷的红土更厚重,层次更分明。',
+    note: '赭红压进暗部，峡谷的红土更厚重，层次更分明。',
     cover: coverFor('insp-canyon', ['#E6C8A8', '#D08858', '#A85838', '#743420', '#421C10']),
   },
 ];

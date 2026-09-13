@@ -165,7 +165,7 @@ export function candidatesFrom(img: ImageData): Candidate[] {
     ['原色', base, '强化照片本来的氛围'],
     ['偏暖', warm, '把整体往暖里推一点'],
     ['偏冷', cool, '把整体往冷里收一点'],
-    ['互补', comp, '冷暖对撞,风光调色最经典的手法'],
+    ['互补', comp, '冷暖对撞，风光调色最经典的手法'],
   ];
 
   return list.map(([name, rgb, note]) => ({ name, rgb, hex: toHex(rgb), note }));
