@@ -9,6 +9,7 @@ import { ref } from 'vue';
 import type { Preset } from '@/composables/usePresets';
 import { BLEND_LABELS } from '@/render/pipeline';
 import { generatePalette } from '@palette/palette';
+import emptyArt from '@/assets/brand/empty-presets.png';
 
 const props = defineProps<{
   presets: Preset[];
@@ -62,7 +63,10 @@ function rampOf(hex: string) {
       class="on-dark"
       :title="props.keyword ? '没有匹配的预设' : '还没有预设'"
       :description="props.keyword ? '换个名字或色值试试，或清空搜索框。' : '在调色台调出满意的效果后，点「存为预设」。'"
-    />
+    >
+      <!-- 空色卡夹插图(Miora 绘制),纯装饰;搜不到时也用这张 -->
+      <template #image><img class="empty-art" :src="emptyArt" alt="" /></template>
+    </t-empty>
 
     <div v-else class="grid">
       <article v-for="p in props.presets" :key="p.id" class="card">
@@ -103,6 +107,9 @@ function rampOf(hex: string) {
 .lib > .t-empty { margin: auto; padding: var(--s-10) var(--s-16); }
 /* TDesign 空状态说明默认用占位色(40% 黑),在玻璃面板上对比度不到 4.5,改用次要文字色 */
 .lib > .t-empty :deep(.t-empty__description) { color: var(--td-text-color-secondary); }
+/* TDesign 的标题默认和说明同为次要色,分不出主次:标题用主文字色 */
+.lib > .t-empty :deep(.t-empty__title) { color: var(--td-text-color-primary); font-weight: 500; }
+.empty-art { display: block; height: 110px; width: auto; margin-bottom: var(--s-5); }
 /* 搜索条和空状态浮在背景上,放进磨砂玻璃;预设卡片本身是实底白卡 */
 .lib-bar, .lib > .t-empty {
   border-radius: var(--r-panel);

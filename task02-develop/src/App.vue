@@ -24,6 +24,7 @@ import ProfilePanel from './components/ProfilePanel.vue';
 import CvdCheck from './components/CvdCheck.vue';
 import ExportPanel from './components/ExportPanel.vue';
 import Backdrop from './components/Backdrop.vue';
+import markUrl from './assets/brand/mark.png';
 import { MessagePlugin } from 'tdesign-vue-next';
 
 const { raw, palette, valid } = useTheme();
@@ -299,7 +300,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
 
     <header class="head">
       <div class="brand">
-        <span class="mark" aria-hidden="true"></span>
+        <img class="mark" :src="markUrl" alt="" />
         <div>
           <h1>显影台</h1>
           <p class="tag">滤镜不是黑盒，是一条能看见、能改、能导出的色阶</p>
@@ -536,18 +537,10 @@ main:focus { outline: none; }
 .head { display: flex; justify-content: center; margin-bottom: var(--s-10); }
 .brand { display: flex; flex-direction: column; align-items: center; gap: var(--s-3); text-align: center; }
 
-/* 品牌标记 = 阶梯楔。暗房标定用的那把实物灰阶尺,五个硬边台阶,
-   不是一道平滑渐变——色阶本来就是离散的十阶,标记也该是离散的。 */
-.mark {
-  width: 40px; height: 28px; border-radius: var(--r-tick); flex: none;
-  background: linear-gradient(90deg,
-    var(--td-brand-color-2) 0 20%,
-    var(--td-brand-color-4) 20% 40%,
-    var(--td-brand-color-6) 40% 60%,
-    var(--td-brand-color-8) 60% 80%,
-    var(--td-brand-color-10) 80% 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
-}
+/* 品牌标记 = 阶梯楔(Miora 绘制)。暗房标定用的那把实物灰阶尺,五个硬边台阶,
+   不是一道平滑渐变——色阶本来就是离散的十阶,标记也该是离散的。
+   页头压在深色背景上,只取色条、不带图标的深色底块;高度固定,宽度随原图比例。 */
+.mark { display: block; height: 28px; width: auto; flex: none; }
 /* 站名略微拉开字距;左侧补同样的量,抵消最后一个字后面的字距,保证视觉上仍在中轴 */
 h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; padding-left: .06em; margin: 0; line-height: 1.15; color: #fff; }
 /* 页头和导航直接压在背景顶部更暗的遮罩上,文字用白色 */
@@ -719,12 +712,19 @@ h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; paddi
 /* ── 光学刻度尺:页面的记忆点 ── */
 .scale { user-select: none; }
 .scale-bar { display: flex; gap: 2px; height: 40px; }
+/* 每一阶描一圈细边:深色调最暗的几阶和深色面板几乎同色,没有边就看不出格子。
+   第二层阴影是压暗用的面板色遮罩,平时全透明,两态阴影层数一致才能平滑过渡 */
 .tick {
   flex: 1; border-radius: var(--r-tick);
-  transition: opacity .2s, transform .2s;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2), inset 0 0 0 40px rgba(23, 25, 29, 0);
+  transition: box-shadow .2s, transform .2s;
   position: relative;
 }
-.tick.off { opacity: .2; transform: scaleY(.7); }
+/* 区间外:盖一层面板色压暗,描边留着。不用 opacity——它会把描边一起淡掉 */
+.tick.off {
+  transform: scaleY(.7);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .34), inset 0 0 0 40px rgba(23, 25, 29, .8);
+}
 .scale-nums { display: flex; gap: 2px; margin-top: 5px; }
 .scale-nums span { flex: 1; text-align: center; font-size: var(--t-micro); color: var(--td-text-color-primary); }
 .scale-nums span.dim { opacity: .3; }
@@ -759,7 +759,7 @@ h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; paddi
 .app.working { padding-top: var(--s-5); }
 .app.working .head { margin-bottom: var(--s-3); }
 .app.working .brand { flex-direction: row; gap: var(--s-2); }
-.app.working .mark { width: 24px; height: 17px; }
+.app.working .mark { height: 17px; }
 .app.working h1 { font-size: var(--t-title); letter-spacing: .04em; padding-left: .04em; }
 .app.working .tag { display: none; }
 .app.working .tabs { margin-bottom: var(--s-6); }

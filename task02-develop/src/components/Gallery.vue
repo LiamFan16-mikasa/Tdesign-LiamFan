@@ -7,6 +7,7 @@
  */
 import type { Work } from '@/composables/useGallery';
 import { BLEND_LABELS } from '@/render/pipeline';
+import emptyArt from '@/assets/brand/empty-gallery.png';
 
 const props = defineProps<{ works: Work[]; ready: boolean; error: string }>();
 const emit = defineEmits<{
@@ -32,7 +33,10 @@ const emit = defineEmits<{
       class="on-dark"
       title="还没有作品"
       description="在调色台调出满意的一版，点「存入作品集」。"
-    />
+    >
+      <!-- 空画架插图(Miora 绘制),纯装饰 -->
+      <template #image><img class="empty-art" :src="emptyArt" alt="" /></template>
+    </t-empty>
 
     <div v-else class="grid on-dark">
       <figure v-for="w in props.works" :key="w.id" class="work">
@@ -62,6 +66,10 @@ const emit = defineEmits<{
 .loading, .gallery > .t-empty { margin: auto; padding: var(--s-10) var(--s-16); }
 /* TDesign 空状态说明默认用占位色(40% 黑),在玻璃面板上对比度不到 4.5,改用次要文字色 */
 .gallery > .t-empty :deep(.t-empty__description) { color: var(--td-text-color-secondary); }
+/* TDesign 的标题默认和说明同为次要色,分不出主次:标题用主文字色 */
+.gallery > .t-empty :deep(.t-empty__title) { color: var(--td-text-color-primary); font-weight: 500; }
+/* 画架是竖长构图,比预设库的活页夹高一些,两张画面分量才相当 */
+.empty-art { display: block; height: 150px; width: auto; margin-bottom: var(--s-5); }
 /* 读库提示、空状态和作品网格都浮在背景上,放进磨砂玻璃 */
 .loading, .gallery > .t-empty, .grid {
   border-radius: var(--r-panel);
