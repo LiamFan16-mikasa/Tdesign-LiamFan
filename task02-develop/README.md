@@ -2,28 +2,37 @@
 
 用色阶当滤镜的风光摄影调色台。犀牛鸟 2026 · Task 02。
 
+传一张风光照，选一个色调，照片按这个色调重新上色，界面也同时穿上这个色调。
+
+在线体验：<https://liamfan16-mikasa.github.io/Tdesign-LiamFan/task02-develop/dist/>
+
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # 产物在 dist/，会被提交，GitHub Pages 直接发布它
+npm run dev          # http://localhost:5173
+npm run build        # 类型检查 + 构建，产物在 dist/，会被提交，GitHub Pages 直接发布它
 npm run typecheck
-npm test           # 预设库存取逻辑，16 项断言
+npm test             # 预设库存取逻辑，16 项断言
+npm run e2e          # 端到端验收：先 npm run dev，另开终端运行（需要本机 Chrome，路径可用 CHROME 环境变量指定）
+npm run e2e:preview  # 验收生产构建：先 npm run build && npx vite preview
+npm run e2e:live     # 验收线上地址
 ```
 
-演示地址：`https://liamfan16-mikasa.github.io/Tdesign-LiamFan/task02-develop/dist/`
+`dist/` **要提交**。Pages 发布的是仓库里的静态文件，不跑构建；`vite.config.ts` 里构建与预览用的
+`base` 也是按这个路径写的。改部署路径的话两处要一起改。
 
-`dist/` **要提交**。Pages 发布的是仓库里的静态文件，不跑构建；`vite.config.ts` 里的
-`base` 也是按这个路径写的。改路径的话两处要一起改。
+## 功能
 
-## 当前进度
+| 面板 | 做什么 | 数据存在哪 |
+|---|---|---|
+| 调色台 | 上传照片，从照片色彩里提取四条候选色调（原色、偏暖、偏冷、互补），也可以自定义主色；调映射区间、混合模式（正常 / 柔光 / 叠加 / 明度）与强度；按住看原图；导出原图尺寸的照片与 Design Token；色觉友好度检查 | 主色存 localStorage |
+| 灵感 | 6 个调色范例，一键把参数带回调色台 | 内置 |
+| 作品集 | 调好的照片连同全套参数存下来，点开即还原 | IndexedDB |
+| 预设库 | 只记色调、混合模式与强度，换一张照片也能复用；可搜索、重命名、删除 | localStorage |
+| 我的 | 昵称、头像、载入照片后是否自动套用第一条候选 | localStorage |
 
-调色台与预设库已经能用。传一张风光照，选一个色调，照片按这个色调重新上色，
-界面也同时穿上这个色调；调好的配置可以存进预设库复用。
+面板状态放在 URL 的 hash 里（`#gallery`、`#library`……），可以直接链接、浏览器后退，刷新后停在原面板。
 
-```bash
-npm test        # 预设库存取逻辑，16 项断言
-npm run typecheck
-```
+灵感库的封面：把照片放进 `src/assets/covers/`，以范例 id 命名即可自动接上，缺图时显示生成的占位图。命名对照见该目录的 README。
 
 ## 怎么做的
 
@@ -43,8 +52,9 @@ npm run typecheck
 **混合在 gamma 空间做**，不是线性光。这一条和 Task 01 的色域映射相反——那边必须在线性光里算，
 但混合模式要跟 Photoshop 的观感一致，摄影师的手感是被 PS 训练出来的。
 
-**预设存 localStorage**。这个应用没有后端也不该有——调色是本地行为，
-把用户的照片传到服务器只为了存三个数字，不划算也不该做。
+**数据只留在本机**。这个应用没有后端也不该有——调色是本地行为，
+把用户的照片传到服务器只为了存三个数字，不划算也不该做。预设和个人设置是小数据，存 localStorage；
+作品集要存缩略图，localStorage 的配额装不下几张，所以用 IndexedDB。
 
 ## 和 Task 01 的关系
 
@@ -54,12 +64,27 @@ npm run typecheck
 换肤的全部机制只有两行：
 
 ```ts
-const p = generatePalette('#0052D9', 'dark');
-applyTokens(p);   // 写 24 个 CSS 变量到 :root，并设置 theme-mode="dark"
+const p = generatePalette('#0E7C86', 'light');
+applyTokens(p);   // 写 24 个 CSS 变量到 :root
 ```
 
 不需要手动映射语义 token。TDesign 的 `--td-brand-color`、`--td-bg-color-page`、
 `--td-component-stroke` 这些的值都是 `var(--td-数字-token)`，覆盖数字层，语义层自动跟着变。
+Task 01 也能生成深色阶（`applyTokens` 会一并设置 `theme-mode="dark"`），显影台的界面目前只用浅色一套。
+
+## 验收
+
+- `npm test`：预设库存取逻辑，16 项断言。
+- `e2e/run.cjs`：23 项端到端流程——上传照片与候选色调、区间与强度、按住看原图、存作品集并刷新后仍在、还原参数、预设的存 / 搜 / 改 / 删、灵感套用、色觉检查、导出照片与 Token、URL 前进后退与刷新、纯键盘操作、个人设置持久化，以及五个面板在 390px 视口下无横向溢出。
+- `e2e/prodcheck.cjs`：6 项生产构建样式检查，专门防下面这个坑。
+
+## 踩过的坑
+
+**生产构建丢了 TDesign 的全局主题变量。** 组件按需引入（unplugin-vue-components）只会带上各组件自己的样式；
+定义 `--td-brand-color` 这些变量的全局样式表只挂在库的总入口上，而总入口不在 TDesign 的 `sideEffects` 白名单里，
+生产构建做 tree-shaking 时整张被丢掉——线上主按钮透明、滑块消失、页面底色变白。
+dev 会预打包整个库，所以本地怎么看都是好的。修复是在 `main.ts` 里显式引入
+`tdesign-vue-next/es/style/index.css`；教训是**验收要对着构建产物做，不能只看 dev**。
 
 ## 没有覆盖的东西
 
