@@ -26,9 +26,11 @@ const emit = defineEmits<{
       <t-loading size="small" text="正在读取作品集…" />
     </div>
 
+    <!-- TDesign 的 title 为空时会回退成默认的「暂无数据」,所以要给一个真标题,描述只说下一步 -->
     <t-empty
       v-else-if="!props.works.length"
-      description="还没有作品。在调色台调出满意的一版,点「存入作品集」。"
+      title="还没有作品"
+      description="在调色台调出满意的一版，点「存入作品集」。"
     />
 
     <div v-else class="grid">

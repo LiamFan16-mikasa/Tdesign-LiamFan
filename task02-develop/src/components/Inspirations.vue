@@ -64,6 +64,10 @@ function rampOf(hex: string) {
 <style scoped>
 .lead { font-size: var(--t-base); margin: 0 0 var(--s-5); max-width: 60ch; line-height: 1.7; }
 .grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+/* 范例是 6 个:宽屏下 auto-fill 会排成 5+1,最后一张落单。够宽时固定 3 列,排成 3×2 */
+@media (min-width: 1100px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
 
 /* 卡片不投影、不浮起:悬停只让描边亮起来 */
 .card {

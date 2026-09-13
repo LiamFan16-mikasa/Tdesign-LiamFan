@@ -57,7 +57,12 @@ function rampOf(hex: string) {
 
     <t-alert v-if="props.error" theme="warning" :message="props.error" style="margin-bottom: 14px" />
 
-    <t-empty v-if="!props.presets.length" description="还没有预设。在调色台调出满意的效果后，点「存为预设」。" />
+    <!-- presets 是搜索过滤后的列表:搜不到和一个都没有要分开说,否则有预设时搜空了也显示「还没有预设」 -->
+    <t-empty
+      v-if="!props.presets.length"
+      :title="props.keyword ? '没有匹配的预设' : '还没有预设'"
+      :description="props.keyword ? '换个名字或色值试试，或清空搜索框。' : '在调色台调出满意的效果后，点「存为预设」。'"
+    />
 
     <div v-else class="grid">
       <article v-for="p in props.presets" :key="p.id" class="card">
