@@ -4,7 +4,7 @@
  * 两条关键约束：
  *
  * 一、预览必须缩放。手机拍的原图动辄 4000×3000，一千二百万像素，
- *     每帧跑一遍会卡死。预览统一缩到长边 1600，导出时才用原图重跑一遍。
+ *     每帧跑一遍会卡死。预览统一缩到长边 1280，导出时才用原图重跑一遍。
  *
  * 二、渲染要合并到一帧里。拖动强度滑块时事件每秒能触发上百次，
  *     每次都跑一趟像素循环会积压。用 requestAnimationFrame 合并，
@@ -55,15 +55,27 @@ export function useImage(opts: UseImageOptions) {
 
   /* ------------------------------ 载入 ------------------------------ */
 
-  async function load(file: File): Promise<void> {
+  /**
+   * 载入序号。解码是异步的：连着换两张图时，先选的大图可能比后选的小图晚解码完。
+   * 只有最后发起的那次载入能写进状态，早先的解码结果到手就丢掉。
+   */
+  let loadSeq = 0;
+
+  /** 返回这张图是否真的放上了台面：读不出来、或被之后的载入顶掉，都返回 false */
+  async function load(file: File): Promise<boolean> {
     error.value = '';
     if (!file.type.startsWith('image/')) {
       error.value = '这不是图片文件';
-      return;
+      return false;
     }
+    const seq = ++loadSeq;
     loading.value = true;
     try {
       const bitmap = await createImageBitmap(file);
+      if (seq !== loadSeq) {
+        bitmap.close();
+        return false;
+      }
       // 换图时释放上一张。ImageBitmap 占的是解码后的原始像素，
       // 一张 4000×3000 就是 48MB，连传几张不释放会把内存吃光。
       if (sourceBitmap && 'close' in sourceBitmap) sourceBitmap.close();
@@ -90,10 +102,12 @@ export function useImage(opts: UseImageOptions) {
       hasImage.value = true;
       schedule();
       if (opts.onLoaded && previewSrc) opts.onLoaded(previewSrc);
+      return true;
     } catch {
-      error.value = '这张图读不出来，换一张试试';
+      if (seq === loadSeq) error.value = '这张图读不出来，换一张试试';
+      return false;
     } finally {
-      loading.value = false;
+      if (seq === loadSeq) loading.value = false;
     }
   }
 

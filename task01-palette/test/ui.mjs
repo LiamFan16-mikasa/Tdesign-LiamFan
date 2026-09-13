@@ -1,6 +1,6 @@
 import { JSDOM } from 'jsdom';
 import fs from 'fs';
-// 相对本文件定位构建产物;原来写死的 /home/claude/forge 只在最初的 Linux 沙盒里存在
+// 相对本文件定位构建产物,换机器、换目录都能跑
 const dom = new JSDOM(fs.readFileSync(new URL('../dist/色阶发生器.html', import.meta.url),'utf8'),
   { runScripts:'dangerously', pretendToBeVisual:true, url:'https://x/' });
 const { window } = dom; const d = window.document;

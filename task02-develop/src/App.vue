@@ -71,6 +71,12 @@ const SAMPLE_COVERS = INSPIRATIONS.map((i) => i.cover);
 let pendingSample: Inspiration | null = null;
 const sampleLoading = ref(false);
 
+/**
+ * 最近一次「放照片」的动作编号。示例要先取图再解码,中途用户自己选了照片,
+ * 示例就作废:不再放上台面,也不把示例参数套到用户的照片上。
+ */
+let loadIntent = 0;
+
 /** 拖着文件经过台面时亮起描边。进入子元素也会触发 dragleave,所以要判断是不是真的离开了台面 */
 const dragging = ref(false);
 function onDragLeave(e: DragEvent) {
@@ -196,16 +202,20 @@ function setParams(i: Inspiration) {
  * 示例图片是站内资源,取回来包装成 File,走和上传完全相同的载入流程。
  */
 async function loadSample(i: Inspiration) {
+  const intent = ++loadIntent;
   sampleLoading.value = true;
   try {
     const res = await fetch(i.cover);
     if (!res.ok) throw new Error(String(res.status));
     const blob = await res.blob();
+    if (intent !== loadIntent) return; // 取图期间用户自己选了照片
     pendingSample = i;
-    await img.load(new File([blob], `${i.id}.jpg`, { type: blob.type || 'image/jpeg' }));
-    if (img.error.value || !img.hasImage.value) throw new Error(img.error.value);
+    const ok = await img.load(new File([blob], `${i.id}.jpg`, { type: blob.type || 'image/jpeg' }));
+    if (intent !== loadIntent) return; // 解码期间被用户的照片顶掉
+    if (!ok) throw new Error(img.error.value);
     MessagePlugin.success(`已把「${i.title}」连同调色参数放上台面`);
   } catch {
+    if (intent !== loadIntent) return;
     // 载入失败要清掉,否则下一次用户自己上传时会误套这张示例的参数
     pendingSample = null;
     MessagePlugin.error('示例照片没有载入，换一张示例，或选择自己的照片');
@@ -264,17 +274,23 @@ const readoutAlt = computed(() => {
   return n ? `原图 ${n.w} 乘 ${n.h} 像素，本次渲染耗时 ${img.lastRenderMs.value.toFixed(1)} 毫秒` : '';
 });
 
+/** 用户自己选的照片:作废还在路上的示例,也不套示例参数 */
+function loadOwn(f: File) {
+  loadIntent++;
+  pendingSample = null;
+  img.load(f);
+}
 function onFile(e: Event) {
   const el = e.target as HTMLInputElement;
   const f = el.files?.[0];
-  if (f) img.load(f);
+  if (f) loadOwn(f);
   // 清空，否则再选同一个文件不会触发 change，用户以为「换一张」坏了
   el.value = '';
 }
 function onDrop(e: DragEvent) {
   dragging.value = false;
   const f = e.dataTransfer?.files?.[0];
-  if (f) img.load(f);
+  if (f) loadOwn(f);
 }
 
 async function download() {
@@ -692,9 +708,11 @@ h1 { font-size: var(--t-display); font-weight: 600; letter-spacing: .06em; paddi
   transition: box-shadow var(--ease), border-color var(--ease);
 }
 .tone:hover .tone-chip { border-color: var(--td-text-color-primary); }
-.tone.on .tone-chip { box-shadow: 0 0 0 2px var(--stage), 0 0 0 3px var(--td-brand-color); }
+/* 选中外圈用白色,不用主色:主色就是这个色调本身,深色调时外圈会和色块、深色面板糊成一片 */
+.tone.on .tone-chip { box-shadow: 0 0 0 2px var(--stage), 0 0 0 4px rgba(255, 255, 255, .9); }
 .tone-name { font-size: var(--t-micro); color: var(--td-text-color-secondary); text-align: center; }
-.tone.on .tone-name { color: var(--td-brand-color); }
+/* 名字同理不用主色:深色面板上主色字对比常不到 3:1 */
+.tone.on .tone-name { color: var(--td-text-color-primary); font-weight: 500; }
 .tone:focus-visible { outline-offset: 2px; border-radius: var(--r-ctl); }
 
 .pick { display: flex; gap: var(--s-2); align-items: center; margin-top: var(--s-3); }

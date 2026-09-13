@@ -4,13 +4,13 @@
 
 | 范例 | 文件名 |
 |---|---|
-| 落日海岸 | `insp-sunset.jpg` |
-| 晨雾松林 | `insp-fog.jpg` |
-| 暮色麦田 | `insp-goldenwheat.jpg` |
-| 蓝色时刻 | `insp-bluehour.jpg` |
-| 褪色胶片 | `insp-fadedfilm.jpg` |
-| 峡谷赭石 | `insp-canyon.jpg` |
+| 镜湖倒影 | `insp-sunset.jpg` |
+| 松林湖畔 | `insp-fog.jpg` |
+| 金色草原 | `insp-goldenwheat.jpg` |
+| 冰川湖 | `insp-bluehour.jpg` |
+| 褪色秋林 | `insp-fadedfilm.jpg` |
+| 赭石温泉 | `insp-canyon.jpg` |
 
 - 支持 jpg / jpeg / png / webp，封面按 4:3 裁切显示，建议长边 1200px 左右、单张 300KB 以内。
 - 没放照片的范例继续显示生成的 SVG 占位，不会报错。
-- 照片来源与许可记进 process.md（Unsplash / Pexels 是各自的许可，不是 CC0）。
+- 文件名沿用最初的范例 id，换过照片和标题后没有改名，免得牵动已存下的作品与预设。

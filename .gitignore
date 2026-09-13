@@ -3,6 +3,3 @@ node_modules/
 Thumbs.db
 *.log
 **/dist/lib.mjs
-
-# 09-06 的嵌套旧副本,已废弃
-/Tdesign-LiamFan/
