@@ -85,7 +85,8 @@ function rampOf(hex: string) {
             :maxlength="24" aria-label="重命名这个预设" autocomplete="off"
             @blur="commitRename(p.id)" @enter="commitRename(p.id)"
           />
-          <button v-else class="name" @click="startRename(p)">{{ p.name }}</button>
+          <!-- 预设名默认是色值,按规矩 3 走等宽 -->
+          <button v-else class="name" :class="{ mono: p.name.startsWith('#') }" @click="startRename(p)">{{ p.name }}</button>
 
           <div class="tags">
             <t-tag size="small" variant="light">{{ BLEND_LABELS[p.blend] }}</t-tag>
@@ -121,7 +122,9 @@ function rampOf(hex: string) {
 .muted { color: var(--td-text-color-secondary); }
 .tiny { font-size: var(--t-micro); }
 
-.grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+/* 卡片定宽、整组居中:预设少的时候也落在搜索框下方的中轴上,不贴左边。
+   用 auto-fit 不用 auto-fill——后者会留着空列,一张卡仍然落在最左一列 */
+.grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fit, 240px); justify-content: center; }
 
 .card {
   background: var(--td-bg-color-container);
@@ -151,6 +154,8 @@ function rampOf(hex: string) {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .name:hover { color: var(--td-brand-color); }
+/* .name 上的 font: inherit 优先级比全局 .mono 高,这里补回等宽 */
+.name.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 .tags { display: flex; align-items: center; gap: 6px; margin-top: var(--s-2); }
 </style>

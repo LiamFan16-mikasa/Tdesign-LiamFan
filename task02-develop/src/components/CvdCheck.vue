@@ -56,13 +56,11 @@ watch(() => props.visible, (v) => { if (v) requestAnimationFrame(renderAll); });
 
 <template>
   <t-drawer
+    class="on-dark dark-sheet"
     :visible="props.visible" :size="drawerSize" header="色觉友好度检查"
     :footer="false" @close="emit('update:visible', false)"
   >
-    <p class="intro">
-      风光片常靠红绿对比撑画面。约 8% 的男性有红绿色觉障碍,
-      在他们眼里这种对比可能整个塌掉。下面是当前调色结果在四种色觉下的样子。
-    </p>
+    <p class="intro">风光片常靠红绿对比撑画面。约 8% 的男性有红绿色觉障碍，在他们眼里这种对比可能整个塌掉。下面是当前调色结果在四种色觉下的样子。</p>
     <div class="list">
       <figure v-for="type in TYPES" :key="type">
         <canvas :ref="(el: any) => (canvases[type] = el)" />
@@ -93,7 +91,8 @@ figcaption b { font-size: var(--t-base); font-weight: 600; }
 .what { font-size: var(--t-small); color: var(--td-text-color-secondary); }
 .rate {
   font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-  font-size: var(--t-micro); color: var(--td-text-color-placeholder);
+  /* 读数是信息,不是占位:用次要文字色,深色抽屉上才够 4.5:1 */
+  font-size: var(--t-micro); color: var(--td-text-color-secondary);
   margin-left: auto;
 }
 </style>

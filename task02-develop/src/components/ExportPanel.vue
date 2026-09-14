@@ -51,7 +51,9 @@ function downloadTokens() {
 </script>
 
 <template>
+  <!-- 抽屉是操作面板,和工具栏同一种深色材质;挂在 body 上,所以样式在 style.css 的 .dark-sheet -->
   <t-drawer
+    class="on-dark dark-sheet"
     :visible="props.visible" :size="drawerSize" header="导出"
     :footer="false" @close="emit('update:visible', false)"
   >
@@ -66,11 +68,8 @@ function downloadTokens() {
     <t-divider />
 
     <div class="sec">
-      <h3 class="sec-t">色阶 → Design Token</h3>
-      <p class="muted">
-        你在照片上调出的色调，就是一套能贴进 TDesign 项目的主题。
-        滤镜和主题是同一条色阶。
-      </p>
+      <h3 class="sec-t">色阶导出为 Design Token</h3>
+      <p class="muted">你在照片上调出的色调，就是一套能贴进 TDesign 项目的主题：滤镜和主题是同一条色阶。</p>
       <t-radio-group v-model="format" variant="default-filled" size="small" style="margin-bottom: 12px">
         <t-radio-button value="css">CSS 变量</t-radio-button>
         <t-radio-button value="json">JSON</t-radio-button>

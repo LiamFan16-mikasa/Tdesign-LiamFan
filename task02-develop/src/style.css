@@ -12,12 +12,14 @@
       其余一切只用发丝描边分层,不堆阴影。
    3. 所有数字走等宽:色值、尺寸、毫秒、百分比、区间。仪器的读数是等宽的。
    4. 悬停只改描边,不改位置。这个产品真正的动效是照片重新渲染那一下。
+
+   材质也只有两种:装照片的是白色相纸卡片;
+   操作类的面板、表单、抽屉、弹窗、提示条都是深色,和暗房台面一个调子。
    ──────────────────────────────────────────────────────────────── */
 
 :root {
-  /* 站点只有浅色一套。不声明的话,深色系统的浏览器会自动反色原生滚动条
-     和表单控件,压在我们的浅色界面上。 */
-  color-scheme: light;
+  /* 页面是暗房的深色。声明 dark,浏览器原生的滚动条才不会是一条浅灰压在深色页面上 */
+  color-scheme: dark;
 
   /* ── 外壳:不进色阶的中性骨架 ── */
   --stage: #16181c;          /* 照片台面 */
@@ -67,6 +69,8 @@
   --glass: rgba(20, 22, 27, .72);
   --glass-edge: rgba(255, 255, 255, .08);
   --glass-filter: blur(24px) saturate(1.1);
+  /* 抽屉、弹窗、提示条的底:和玻璃面板同一个颜色,但不透明——它们下面压着的是遮罩或内容,不是背景 */
+  --sheet: #1a1d22;
 
   --ease: .15s ease;
 }
@@ -110,9 +114,10 @@ body {
   opacity: 0; pointer-events: none;
 }
 
-/* 深色玻璃面板里的内容:把 TDesign 的文字、底色、描边 token 局部换成浅色一套,
+/* 深色面板里的内容:把 TDesign 的文字、底色、描边 token 局部换成浅色一套,
    面板内的输入框、下拉框、滑块、按钮随之变成深色风格。
-   下拉菜单、取色器这类弹层挂在 body 上,不在面板内,保持默认浅色。 */
+   抽屉、弹窗在组件上同时加 .on-dark 和 .dark-sheet;
+   下拉菜单、取色器这类小弹层挂在 body 上,保持默认浅色。 */
 .on-dark {
   color: rgba(255, 255, 255, .9);
   --td-text-color-primary: rgba(255, 255, 255, .9);
@@ -123,6 +128,10 @@ body {
   --td-bg-color-container-hover: rgba(255, 255, 255, .1);
   --td-bg-color-container-active: rgba(255, 255, 255, .14);
   --td-bg-color-secondarycontainer: rgba(255, 255, 255, .08);
+  --td-bg-color-secondarycontainer-hover: rgba(255, 255, 255, .12);
+  --td-bg-color-secondarycontainer-active: rgba(255, 255, 255, .16);
+  /* 选中态的底(如导出抽屉里「CSS 变量 / JSON」切换的滑块),默认是白色,不换会白底白字 */
+  --td-bg-color-container-select: rgba(255, 255, 255, .18);
   --td-bg-color-component: rgba(255, 255, 255, .16);
   --td-bg-color-component-hover: rgba(255, 255, 255, .22);
   --td-bg-color-component-disabled: rgba(255, 255, 255, .08);
@@ -131,6 +140,27 @@ body {
   --td-component-stroke: rgba(255, 255, 255, .12);
   --td-border-level-1-color: rgba(255, 255, 255, .12);
   --td-border-level-2-color: rgba(255, 255, 255, .18);
+}
+
+/* ── 浮层:抽屉和弹窗是操作面板,和工具栏同一种深色材质 ──
+   .on-dark 把容器底色换成了半透明,浮层本身要一块实底。
+   TDesign 的组件样式可能晚于这里加载,选择器前加 :root 提一级,不靠加载顺序 */
+:root .dark-sheet .t-drawer__content-wrapper,
+:root .dark-sheet .t-dialog {
+  background: var(--sheet);
+  border-color: var(--glass-edge);
+}
+:root .dark-sheet .t-drawer__content-wrapper { border-left: 1px solid var(--glass-edge); }
+
+/* ── 提示条:放到页面底部正中,不压页头和导航;深色,和浮层同一种材质 ──
+   位置是 TDesign 写在行内样式里的,只能用 !important 覆盖 */
+.t-message__list { top: auto !important; bottom: var(--s-8) !important; }
+:root .t-message__list .t-message {
+  background: var(--sheet);
+  border: 1px solid var(--glass-edge);
+  color: rgba(255, 255, 255, .9);
+  --td-text-color-primary: rgba(255, 255, 255, .9);
+  --td-text-color-secondary: rgba(255, 255, 255, .66);
 }
 
 /* 键盘焦点在任何地方都要看得见 */

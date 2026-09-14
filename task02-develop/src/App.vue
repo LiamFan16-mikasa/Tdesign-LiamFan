@@ -174,7 +174,8 @@ async function saveToGallery() {
     thumb: img.thumbnail(320),
     hex: raw.value.toUpperCase(), blend: blend.value,
     strength: strength.value, range: [...range.value] as [number, number],
-    title: activeTone.value?.name ?? '',
+    // 主色不在候选里时(比如从示例放上台)没有色调名,和存预设一样退回色值
+    title: activeTone.value?.name ?? raw.value.toUpperCase(),
   });
   if (ok) MessagePlugin.success('已存入作品集');
   else MessagePlugin.error(gallery.error.value || '保存失败');
@@ -527,7 +528,7 @@ watch(() => img.error.value, (e) => { if (e) MessagePlugin.error(e); });
     <CvdCheck v-model:visible="cvdOpen" :snapshot="img.snapshot" />
     <ExportPanel v-model:visible="exportOpen" :palette="palette" :can-export-image="img.hasImage.value" :export-image="download" />
 
-    <t-dialog v-model:visible="saving" header="存为预设" :on-confirm="confirmSave" confirm-btn="存下" cancel-btn="取消">
+    <t-dialog class="on-dark dark-sheet" v-model:visible="saving" header="存为预设" :on-confirm="confirmSave" confirm-btn="存下" cancel-btn="取消">
       <t-input v-model="draftName" placeholder="给这套色调起个名字" :maxlength="24" autofocus @enter="confirmSave" />
       <p class="dim tiny" style="margin: 10px 0 0">预设记的是色调、混合模式和强度，不是这张图。换一张照片套用它，得到的是同一种色调倾向。</p>
     </t-dialog>

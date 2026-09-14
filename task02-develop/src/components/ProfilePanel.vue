@@ -48,7 +48,7 @@ const GLYPH_NAMES: Record<string, string> = {
   <div class="profile">
     <h2 class="sr-only">我的</h2>
 
-    <div class="card">
+    <div class="card on-dark">
       <div class="hero">
         <div class="avatar" :style="{ background: props.accent }">
           <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
@@ -102,7 +102,12 @@ const GLYPH_NAMES: Record<string, string> = {
 <style scoped>
 /* 个人卡片落在中轴上 */
 .profile { max-width: 560px; margin: 0 auto; }
-.card { border: 1px solid var(--td-component-stroke); border-radius: var(--r-panel); overflow: hidden; background: var(--td-bg-color-container); }
+/* 个人设置是表单,不是照片:和工具栏同一种深色磨砂玻璃,表单控件随 .on-dark 换成深色风格 */
+.card {
+  border-radius: var(--r-panel); overflow: hidden;
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
+}
 
 /* 头图:暗房台面当底,底边贴一条真实色带 */
 .hero {

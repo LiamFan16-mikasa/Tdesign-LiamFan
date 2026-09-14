@@ -38,14 +38,15 @@ const emit = defineEmits<{
       <template #image><img class="empty-art" :src="emptyArt" alt="" /></template>
     </t-empty>
 
-    <div v-else class="grid on-dark">
+    <div v-else class="grid">
       <figure v-for="w in props.works" :key="w.id" class="work">
-        <button class="frame" :aria-label="`还原 ${w.title || '这张作品'}`" @click="emit('apply', w)">
-          <img :src="w.thumb" :alt="w.title || '作品'" loading="lazy" decoding="async" />
+        <button class="frame" :aria-label="`还原 ${w.title || w.hex}`" @click="emit('apply', w)">
+          <img :src="w.thumb" :alt="w.title || w.hex" loading="lazy" decoding="async" />
           <span class="swatch" :style="{ background: w.hex }"></span>
         </button>
         <figcaption>
-          <span class="ttl">{{ w.title || '未命名' }}</span>
+          <!-- 早先存下的作品可能没有标题,退回色值,不显示「未命名」;标题是色值时按规矩 3 走等宽 -->
+          <span class="ttl" :class="{ mono: (w.title || w.hex).startsWith('#') }">{{ w.title || w.hex.toUpperCase() }}</span>
           <span class="meta">
             <span>{{ BLEND_LABELS[w.blend] }}</span>
             <span class="mono">{{ w.strength }}%</span>
@@ -70,26 +71,32 @@ const emit = defineEmits<{
 .gallery > .t-empty :deep(.t-empty__title) { color: var(--td-text-color-primary); font-weight: 500; }
 /* 画架是竖长构图,比预设库的活页夹高一些,两张画面分量才相当 */
 .empty-art { display: block; height: 150px; width: auto; margin-bottom: var(--s-5); }
-/* 读库提示、空状态和作品网格都浮在背景上,放进磨砂玻璃 */
-.loading, .gallery > .t-empty, .grid {
+/* 读库提示和空状态浮在背景上,放进磨砂玻璃 */
+.loading, .gallery > .t-empty {
   border-radius: var(--r-panel);
   background: var(--glass); border: 1px solid var(--glass-edge);
   backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
 }
 .loading { display: flex; justify-content: center; }
-.grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); padding: var(--s-6); }
-.work { margin: 0; }
+/* 卡片定宽、整组居中:作品少的时候也落在中轴上,不贴左边。
+   用 auto-fit 不用 auto-fill——后者会留着空列,一张卡仍然落在最左一列 */
+.grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fit, 240px); justify-content: center; }
 
-/* 缩略图是相纸,允许投影(全站只有照片投影);悬停不位移,只亮描边 */
-.frame {
-  display: block; width: 100%; padding: 0; cursor: pointer;
-  position: relative; aspect-ratio: 4 / 3; border-radius: var(--r-panel); overflow: hidden;
-  background: var(--stage); box-shadow: var(--lift-thumb);
-  border: 1px solid transparent;
+/* 作品是相纸:白底卡片,照片在上、读数在下,和预设库、灵感的卡片同一种材质;悬停不位移,只亮描边 */
+.work {
+  margin: 0; overflow: hidden;
+  background: var(--td-bg-color-container);
+  border: 1px solid var(--td-component-stroke); border-radius: var(--r-panel);
   transition: border-color var(--ease);
 }
-.frame:hover { border-color: var(--td-brand-color); }
-.frame:focus-visible { outline-offset: 2px; }
+.work:hover { border-color: var(--td-brand-color); }
+
+.frame {
+  display: block; width: 100%; padding: 0; border: 0; cursor: pointer;
+  position: relative; aspect-ratio: 4 / 3;
+  background: var(--stage);
+}
+.frame:focus-visible { outline-offset: -2px; }
 .frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .swatch {
@@ -97,7 +104,7 @@ const emit = defineEmits<{
   border-radius: var(--r-ctl); box-shadow: 0 0 0 2px rgba(255, 255, 255, .85);
 }
 
-figcaption { display: flex; align-items: baseline; gap: var(--s-2); margin-top: var(--s-2); }
+figcaption { display: flex; align-items: baseline; gap: var(--s-2); padding: var(--s-2) var(--s-3) var(--s-3); }
 .ttl {
   font-size: var(--t-base); font-weight: 500; min-width: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
