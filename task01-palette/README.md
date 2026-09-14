@@ -40,10 +40,7 @@ toTokenJson(p);      // { '--td-brand-color-1': '#F6F5FF', … } 共 24 项
 applyTokens(p);      // 运行时写进 document.documentElement，整站立刻换肤
 ```
 
-TDesign 的语义 token（`--td-brand-color`、`--td-bg-color-page`、`--td-border-level-1-color` 等）
-的值都是 `var(--td-数字-token)`，所以**只覆盖数字 token 就够了**，语义层会自动跟着变。
-两处例外：文字颜色走 `--td-font-gray-1..4`（黑色加透明度，不走灰阶），
-`--td-bg-color-container` 在浅色主题下硬编码为 `#fff`。
+TDesign 的语义 token（`--td-brand-color`、`--td-bg-color-page`、`--td-border-level-1-color` 等）的值都是 `var(--td-数字-token)`，所以**只覆盖数字 token 就够了**，语义层会自动跟着变。两处例外：文字颜色走 `--td-font-gray-1..4`（黑色加透明度，不走灰阶），`--td-bg-color-container` 在浅色主题下硬编码为 `#fff`。
 
 色觉模拟单独一个纯函数：
 
