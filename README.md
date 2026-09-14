@@ -7,6 +7,8 @@
 | **Task 01** 色阶发生器 | [打开](https://liamfan16-mikasa.github.io/Tdesign-LiamFan/task01-palette/) | [task01-palette](task01-palette/)，[设计说明](task01-palette/docs/design.md) |
 | **Task 02** 显影台 | [打开](https://liamfan16-mikasa.github.io/Tdesign-LiamFan/task02-develop/dist/) | [task02-develop](task02-develop/) |
 
+全流程产品说明（产品动机、设计理念、使用流程、Miora 的具体产出）：[产品说明.md](产品说明.md)
+
 ---
 
 ## Task 01 — 当一次「调色大师」
@@ -54,13 +56,15 @@
 ## 本地运行
 
 ```bash
+# 在仓库根目录执行
+
 # Task 01
 cd task01-palette && npm install
 npm test            # 293 项断言
 npm run build       # 产出 dist/色阶发生器.html，双击即可运行
 
-# Task 02（引用 ../task01-palette 的源码，两个目录要放在一起）
-cd task02-develop && npm install
+# Task 02（从 task01-palette 回到上一级再进入；它引用 ../task01-palette 的源码，两个目录要放在一起）
+cd ../task02-develop && npm install
 npm run dev         # http://localhost:5173
 npm test            # 16 项断言
 npm run build       # 产物在 dist/，GitHub Pages 直接发布它
